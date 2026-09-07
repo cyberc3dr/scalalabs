@@ -24,6 +24,7 @@ dependencies {
 }
 
 tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     destinationDirectory = file("$rootDir/build")
     archiveVersion = ""
     manifest {
