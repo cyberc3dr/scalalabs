@@ -21,6 +21,7 @@ repositories {
 dependencies {
     implementation(libs.scala.library)
     implementation(libs.guava)
+    implementation(libs.bundles.jackson)
 }
 
 tasks.withType<Jar> {

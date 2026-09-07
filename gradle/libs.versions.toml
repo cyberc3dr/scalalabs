@@ -5,10 +5,18 @@
 guava = "33.7.1-jre"
 scala = "3.9.0"
 zinc = "1.12.1"
+jackson = "3.2.2"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 scala-library = { module = "org.scala-lang:scala-library", version.ref = "scala" }
+jackson-core = { module = "tools.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-scala = { module = "tools.jackson.module:jackson-module-scala_3", version.ref = "jackson" }
+jackson-yaml = { module = "tools.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
+
+[bundles]
+jackson = ["jackson-core", "jackson-databind", "jackson-scala", "jackson-yaml"]
 
 [plugins]
 shadow = "com.gradleup.shadow:9.6.1"
