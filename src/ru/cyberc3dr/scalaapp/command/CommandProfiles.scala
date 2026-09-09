@@ -1,6 +1,7 @@
 package ru.cyberc3dr.scalaapp.command
 
 import ru.cyberc3dr.scalaapp.App
+import ru.cyberc3dr.scalaapp.model.AppConfig
 
 object CommandProfiles extends Command {
   override val name: String = "profiles"
@@ -8,7 +9,10 @@ object CommandProfiles extends Command {
   override def execute(ctx: CommandContext): Unit =
     // App.config ?: throw
     // с lateinit оно вообще notnull будет
-    val config = App.config.getOrElse(throw IllegalStateException("Конфигурация не загружена по какой то причине??"))
+    val config = App.config match
+      case Some(value) => value
+      case None => throw IllegalStateException("Конфигурация не загружена по какой то причине??")
+
     val builder = StringBuilder()
 
     config.profiles.foreach { case (str, profile) =>

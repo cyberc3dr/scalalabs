@@ -15,8 +15,9 @@ object CommandRegistry:
     registerCommand(CommandReloadConfig)
 
   def getByName(name: String): Command =
-    commands.find(_.name.equalsIgnoreCase(name))
-      .getOrElse(throw CommandNotFoundException(name))
+    commands.find(_.name.equalsIgnoreCase(name)) match
+      case Some(cmd) => cmd
+      case _ => throw CommandNotFoundException(name)
 
 end CommandRegistry
 

@@ -22,6 +22,8 @@ object JsonParser:
   но скала мне не дает это сделать нормально, поэтому так
 
   а еще в котлине есть kotlinx serialization, а тут нет
+
+  UPD: внутри Option происходит стирание типа, используйте передачу через []
  */
 
   inline def fromJson[T](json: String)(using ct: ClassTag[T]) : T =
