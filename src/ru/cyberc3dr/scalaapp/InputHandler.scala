@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp
 
-import ru.cyberc3dr.scalaapp.command.{CommandNotFoundException, CommandRegistry, StrBuffer}
+import ru.cyberc3dr.scalaapp.command.{CommandContext, CommandNotFoundException, CommandRegistry, StrBuffer}
 
 import java.util.Scanner
 
@@ -15,12 +15,12 @@ object InputHandler:
 
       if str.trim.nonEmpty then
         val buf = StrBuffer(str.split("\\s+"))
-        handleCommand(buf.getString(1), buf)
+        handleCommand(buf.getString(1), CommandContext(buf, scanner))
 
-  private def handleCommand(name: String, buf: StrBuffer): Unit =
+  private def handleCommand(name: String, ctx: CommandContext): Unit =
     try {
       val command = CommandRegistry.getByName(name)
-      command.execute(buf)
+      command.execute(ctx)
     } catch
       case e: CommandNotFoundException =>
         println(e.getMessage)

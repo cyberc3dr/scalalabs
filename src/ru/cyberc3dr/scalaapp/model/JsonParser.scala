@@ -20,7 +20,7 @@ object JsonParser:
   inline fun <reified T> fromJson(json: String) = mapper.readValue(json, T::class.java)
 
   но скала мне не дает это сделать нормально, поэтому так
-    
+
   а еще в котлине есть kotlinx serialization, а тут нет
  */
 

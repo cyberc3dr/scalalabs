@@ -11,6 +11,8 @@ object CommandRegistry:
   def registerDefaults(): Unit =
     registerCommand(CommandExit)
     registerCommand(CommandTestArgs)
+    registerCommand(CommandProfiles)
+    registerCommand(CommandReloadConfig)
 
   def getByName(name: String): Command =
     commands.find(_.name.equalsIgnoreCase(name))

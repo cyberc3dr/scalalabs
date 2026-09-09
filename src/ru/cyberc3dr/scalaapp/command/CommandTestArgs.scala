@@ -3,7 +3,9 @@ package ru.cyberc3dr.scalaapp.command
 object CommandTestArgs extends Command:
   override val name: String = "testargs"
 
-  override def execute(buf: StrBuffer): Unit =
+  override def execute(ctx: CommandContext): Unit =
+    val buf = ctx.buf
+    
     val number = buf.getInt
     println(s"Введено целое число $number")
     
