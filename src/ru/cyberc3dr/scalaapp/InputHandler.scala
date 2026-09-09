@@ -4,6 +4,7 @@ import ru.cyberc3dr.scalaapp.command.{CommandContext, CommandNotFoundException, 
 
 import java.util.Scanner
 
+// jline это не для меня.
 object InputHandler:
 
   def start() : Unit =

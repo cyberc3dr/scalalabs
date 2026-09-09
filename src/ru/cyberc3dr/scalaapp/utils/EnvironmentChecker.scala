@@ -11,11 +11,18 @@ object EnvironmentChecker {
   def check(): Unit = {
     cmds.foreach { cmd =>
       // молчать, код завершения 0 - команда найдена
+      // одна из лучших фич за сегодня
       val output = s"which ${cmd}".!(ProcessLogger(_ => ()))
       val isAvailable = output == 0
 
       availability(cmd) = isAvailable
     }
+
+    // todo - убрать этот пример вызова
+    val builder = StringBuilder()
+
+    val output = s"curl --head --location --max-time 10 https://example.com".!!(ProcessLogger(_ => ()))
+    println(output)
   }
 
   def isAvailable(cmd: String): Boolean = availability.getOrElse(cmd, throw IllegalArgumentException("Команда введена неверно"))

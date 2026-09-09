@@ -12,6 +12,9 @@ object CommandProfiles extends Command {
     val builder = StringBuilder()
 
     config.profiles.foreach { case (str, profile) =>
+      // нету profile.run { // this }
+      // нету with(profile) { // this }
+      // а собсна почему так?
       builder.append(
         s"""Профиль (id: $str)"
            |${"=".repeat(40)}
