@@ -1,0 +1,35 @@
+{
+  "logFile": "network-diagnostic.log",
+  "historyFile": "diagnostic-history.json",
+  "reportDirectory": "reports",
+  "defaultProfile": "home",
+
+  "profiles": {
+    "home": {
+      "description": "Домашнее подключение",
+      "gateway": "auto",
+      "externalIpTargets": [
+        "1.1.1.1",
+        "8.8.8.8"
+      ],
+      "dnsNames": [
+        "example.com",
+        "wikipedia.org"
+      ],
+      "httpTargets": [
+        "https://example.com"
+      ],
+      "traceTarget": "example.com",
+      "pingCount": 10,
+      "timeoutMilliseconds": 2000,
+      "maximumRouteHops": 20,
+      "thresholds": {
+        "warningLatencyMilliseconds": 100,
+        "criticalLatencyMilliseconds": 300,
+        "warningPacketLossPercent": 5,
+        "criticalPacketLossPercent": 20,
+        "warningHttpTimeMilliseconds": 2000
+      }
+    }
+  }
+}

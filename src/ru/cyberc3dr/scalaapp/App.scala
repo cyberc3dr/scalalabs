@@ -1,7 +1,7 @@
 package ru.cyberc3dr.scalaapp
 
 import ru.cyberc3dr.scalaapp.command.CommandRegistry
-import ru.cyberc3dr.scalaapp.model.{JsonParser, TestModel}
+import ru.cyberc3dr.scalaapp.model.{AppConfig, JsonParser}
 
 // отступы вместо фигурных скобок это забавно
 object App:
@@ -9,9 +9,9 @@ object App:
   def main(args: Array[String]): Unit =
     println("Hello world!")
 
-    val testModel = JsonParser.fromFile[TestModel]("test.json")
+    val config: AppConfig = JsonParser.fromFile("example.json")
 
-    println(testModel)
+    println(config)
 
     CommandRegistry.registerDefaults()
     InputHandler.start()
