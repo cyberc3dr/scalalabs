@@ -28,7 +28,7 @@ object InputHandler:
       case e: Exception =>
         val exceptionClass = e.getClass.getSimpleName
         println(s"Произошла ошибка при выполнении команды $name:")
-        println(s"$exceptionClass: ${e.getMessage}")
+        e.printStackTrace()
 
 end InputHandler
 

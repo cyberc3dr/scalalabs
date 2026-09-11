@@ -13,6 +13,7 @@ object CommandRegistry:
     registerCommand(CommandTestArgs)
     registerCommand(CommandProfiles)
     registerCommand(CommandReloadConfig)
+    registerCommand(CommandPing)
 
   def getByName(name: String): Command =
     commands.find(_.name.equalsIgnoreCase(name)) match

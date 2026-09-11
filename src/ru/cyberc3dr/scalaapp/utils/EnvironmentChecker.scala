@@ -19,10 +19,8 @@ object EnvironmentChecker {
     }
 
     // todo - убрать этот пример вызова
-    val builder = StringBuilder()
-
-    val output = s"curl --head --location --max-time 10 https://example.com".!!(ProcessLogger(_ => ()))
-    println(output)
+    val curl = s"curl --head --location --max-time 10 https://example.com".!!(ProcessLogger(_ => ()))
+    println(curl)
   }
 
   def isAvailable(cmd: String): Boolean = availability.getOrElse(cmd, throw IllegalArgumentException("Команда введена неверно"))
