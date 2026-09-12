@@ -16,6 +16,16 @@ case class PingStats(
   maxLatency: Double
 )
 
+case class TraceStats(
+  address: String,
+  hops: List[Hop]
+)
+
+case class Hop(
+  address: String,
+  latency: Double
+)
+
 @JsonIgnoreProperties(ignoreUnknown = true) // Нам нужны не все поля
 case class CurlResult(
   @JsonProperty("url") url: String,
@@ -112,4 +122,31 @@ object NetUtils:
 
     DnsStats(address, success, addresses.toList, time)
 
+  def getGateway: String =
+    val result = executeCommand("route -n get default")
+    result.find(_.contains("gateway")) match
+      case Some(value) => value.split("\\s+").last
+      case None => throw IllegalStateException("Не удалось обнаружить шлюз - вы не подключены к сети или находитесь под VPN")
 
+  def traceroute(address: String, count: Int): TraceStats =
+    val result = executeCommand(s"traceroute -m $count -q 1 -n $address")
+
+    if(result.exists(_.contains("unknown host"))) then
+      throw IllegalStateException("Хост не существует.")
+
+    val hops = result
+      .filter(_.startsWith(" "))
+      .map { s =>
+        val split = s.split("\\s+")
+        val ip = split.find(_.count(_ == '.') == 3) match
+          case Some(value) => value
+          case None => "*"
+
+        val latency = split.find(_.count(_ == '.') == 1) match
+          case Some(value) => value.toDouble
+          case None => -1.0
+
+        Hop(ip, latency)
+      }
+
+    TraceStats(address, hops)

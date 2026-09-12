@@ -17,6 +17,8 @@ object EnvironmentChecker {
 
       availability(cmd) = isAvailable
     }
+
+    println(NetUtils.traceroute("example.com", 15))
   }
 
   def isAvailable(cmd: String): Boolean = availability.getOrElse(cmd, throw IllegalArgumentException("Команда введена неверно"))
