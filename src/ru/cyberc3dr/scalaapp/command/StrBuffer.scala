@@ -13,18 +13,18 @@ class StrBuffer(private val array: Array[String]):
 
     val str = array(index)
     index += 1
-    str.toIntOption.getOrElse(
-      throw IllegalArgumentException(s"Не удалось перевести $str в Int на позиции $index")
-    )
+    str.toIntOption match
+      case Some(value) => value
+      case None => throw IllegalArgumentException(s"Не удалось перевести $str в Int на позиции $index")
 
   def getDouble: Double =
     if !hasNext then throw NoSuchElementException("Попытка чтения за границами данных")
 
     val str = array(index)
     index += 1
-    str.toDoubleOption.getOrElse(
-      throw IllegalArgumentException(s"Не удалось перевести $str в Double на позиции $index")
-    )
+    str.toDoubleOption match
+      case Some(value) => value
+      case None => throw IllegalArgumentException(s"Не удалось перевести $str в Double на позиции $index")
 
   def getString(count: Int): String =
     if count < 1 || !hasNext then return ""

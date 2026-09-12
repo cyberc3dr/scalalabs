@@ -9,6 +9,7 @@ object CommandProfiles extends Command {
   override def execute(ctx: CommandContext): Unit =
     // App.config ?: throw
     // с lateinit оно вообще notnull будет
+    // UPD: мне нравится такой синтаксис, пойдёт
     val config = App.config match
       case Some(value) => value
       case None => throw IllegalStateException("Конфигурация не загружена по какой то причине??")
@@ -18,7 +19,7 @@ object CommandProfiles extends Command {
     config.profiles.foreach { case (str, profile) =>
       // нету profile.run { // this }
       // нету with(profile) { // this }
-      // а собсна почему так?
+      // а собсна почему так? ну ладно
       builder.append(
         s"""Профиль (id: $str)"
            |${"=".repeat(40)}

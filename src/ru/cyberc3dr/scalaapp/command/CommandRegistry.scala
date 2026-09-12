@@ -14,14 +14,17 @@ object CommandRegistry:
     registerCommand(CommandProfiles)
     registerCommand(CommandReloadConfig)
     registerCommand(CommandPing)
+    registerCommand(CommandHttp)
 
   def getByName(name: String): Command =
     commands.find(_.name.equalsIgnoreCase(name)) match
       case Some(cmd) => cmd
-      case _ => throw CommandNotFoundException(name)
+      case None => throw CommandNotFoundException(name)
 
 end CommandRegistry
 
+// Нужен ли в таком случае exception или лучше придумать какой нибудь Either ?
+// Я не разбираюсь, но по моему throw это тяжеловесная операция для JVM
 class CommandNotFoundException(commandName: String)
   extends Exception(s"Команда $commandName не найдена в регистре команд.")
 

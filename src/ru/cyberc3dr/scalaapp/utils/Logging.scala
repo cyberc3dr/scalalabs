@@ -39,3 +39,25 @@ object Logging:
 
     sb.toString()
 
+  def format(curl: CurlResult): String =
+    val sb = StringBuilder()
+
+    val https = curl.url.startsWith("https")
+
+    sb.append(if https then "HTTPS: " else "HTTP: ")
+    sb.append(s"${curl.url}\n\n")
+
+    sb.append(s"Состояние: ")
+    if !curl.isAvailable then
+      sb.append("Недоступен")
+      return sb.toString()
+
+    sb.append("Доступен\n")
+    sb.append(s"Код ответа ${curl.httpCode}\n")
+    sb.append(s"Время: ${String.format("%.2f", curl.timeTotalMs)} мс\n")
+    sb.append(s"Перенаправлений: ${curl.redirects}\n")
+    if curl.redirects > 0 then sb.append(s"Перенаправлено на: ${curl.urlEffective}\n")
+    sb.append(s"Ошибка TLS: ${if curl.hasTlsError then "есть" else "нет"}")
+
+    sb.toString()
+
