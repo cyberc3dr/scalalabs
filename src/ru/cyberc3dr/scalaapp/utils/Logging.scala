@@ -61,3 +61,19 @@ object Logging:
 
     sb.toString()
 
+  def format(dns: DnsStats): String =
+    val sb = StringBuilder()
+
+    sb.append(s"DNS: ${dns.address}\n\n")
+    sb.append(s"Состояние: ${if dns.success then "Успешно" else "Имя не существует"}")
+    if !dns.success then return sb.toString()
+
+    sb.append("\nПолученные адреса:\n")
+    dns.addresses
+      .map(s => s"- $s\n")
+      .foreach(sb.append)
+
+    sb.append(s"\nВремя выполнения: ${dns.time} мс")
+
+    sb.toString()
+
