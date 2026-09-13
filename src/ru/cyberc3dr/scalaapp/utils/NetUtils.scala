@@ -59,6 +59,9 @@ object NetUtils:
     buf.toList
 
   def ping(address: String, count: Int): PingStats =
+    if(!EnvironmentChecker.isAvailable("ping")) then
+      throw IllegalStateException("Команда ping недоступна.")
+    
     val result = executeCommand(s"ping -c $count $address")
 
     if(result.exists(_.contains("Unknown host"))) {
@@ -94,12 +97,18 @@ object NetUtils:
     PingStats(address, packetsSent, packetsReceived, lossPercent, minimalLatency, avgLatency, maxLatency)
 
   def curl(address: String): CurlResult =
+    if (!EnvironmentChecker.isAvailable("curl")) then
+      throw IllegalStateException("Команда curl недоступна.")
+    
     val result = executeCommand(s"curl -sL -o /dev/null -w \"%{json}\" $address")
     val json = result.head
 
     JsonParser.fromJson[CurlResult](json)
 
   def dig(address: String): DnsStats =
+    if (!EnvironmentChecker.isAvailable("dig")) then
+      throw IllegalStateException("Команда dig недоступна.")
+    
     val result = executeCommand(s"dig $address")
 
     val status = result.find(_.contains("->>HEADER<<-")) match
@@ -130,6 +139,9 @@ object NetUtils:
       case None => throw IllegalStateException("Не удалось обнаружить шлюз - вы не подключены к сети или находитесь под VPN")
 
   def traceroute(address: String, count: Int): TraceStats =
+    if (!EnvironmentChecker.isAvailable("traceroute")) then
+      throw IllegalStateException("Команда traceroute недоступна.")
+    
     val result = executeCommand(s"traceroute -m $count -q 1 -n $address")
 
     if(result.exists(_.contains("unknown host"))) then

@@ -2,7 +2,10 @@ package ru.cyberc3dr.scalaapp.command
 
 import ru.cyberc3dr.scalaapp.utils.{Logging, NetUtils}
 
-import scala.util.{Try, Success, Failure}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Success, Try}
 
 object CommandDns extends Command:
   override val name: String = "dns"
@@ -15,7 +18,12 @@ object CommandDns extends Command:
       return
       
     val address = buf.getString
-    val result = Try(NetUtils.dig(address)) match
+
+    val future = Future {
+      NetUtils.dig(address)
+    }
+
+    val result = Try(Await.result(future, 5.seconds)) match
       case Success(value) => Logging.format(value)
       case Failure(e) => println(s"Ошибка: ${e.getMessage}"); return
 

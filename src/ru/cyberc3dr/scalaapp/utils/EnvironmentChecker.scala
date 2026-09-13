@@ -19,5 +19,7 @@ object EnvironmentChecker {
     }
   }
 
-  def isAvailable(cmd: String): Boolean = availability.getOrElse(cmd, throw IllegalArgumentException("Команда введена неверно"))
+  def isAvailable(cmd: String): Boolean = availability.get(cmd) match
+    case Some(value) => value
+    case None => throw IllegalArgumentException("Команда введена неверно")
 }
