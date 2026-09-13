@@ -77,3 +77,22 @@ object Logging:
 
     sb.toString()
 
+  def format(trace: TraceStats): String =
+    val sb = StringBuilder()
+
+    sb.append(s"Маршрут до ${trace.address}:\n\n")
+
+    val maxLength = trace.hops.map(_.address.length).max
+
+    trace.hops.zipWithIndex
+      .map { case (hop, i) =>
+        s" ${i+1}   ${hop.address.padTo(maxLength, ' ')}     ${if hop.latency != -1 then s"${hop.latency} мс" else "нет ответа"}\n"
+      }
+      .foreach(sb.append)
+
+    val success = trace.success
+    sb.append(if success then "\nЦель достигнута.\n" else "\nЦель не достигнута.\n")
+    sb.append(s"Переходов ${trace.hops.length}")
+
+    sb.toString()
+

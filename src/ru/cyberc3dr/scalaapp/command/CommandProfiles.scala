@@ -1,7 +1,6 @@
 package ru.cyberc3dr.scalaapp.command
 
 import ru.cyberc3dr.scalaapp.App
-import ru.cyberc3dr.scalaapp.model.AppConfig
 
 object CommandProfiles extends Command {
   override val name: String = "profiles"

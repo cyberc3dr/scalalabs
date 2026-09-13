@@ -18,7 +18,8 @@ case class PingStats(
 
 case class TraceStats(
   address: String,
-  hops: List[Hop]
+  hops: List[Hop],
+  success: Boolean
 )
 
 case class Hop(
@@ -149,4 +150,12 @@ object NetUtils:
         Hop(ip, latency)
       }
 
-    TraceStats(address, hops)
+    // надо точно убедиться достигнута ли цель
+    var ip = List(address)
+    if address.exists(!_.isDigit) then
+      // надо понять какой айпи у домена
+      ip = dig(address).addresses
+
+    val success = ip.contains(hops.last.address)
+
+    TraceStats(address, hops, success)

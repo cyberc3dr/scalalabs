@@ -16,6 +16,7 @@ object CommandRegistry:
     registerCommand(CommandPing)
     registerCommand(CommandHttp)
     registerCommand(CommandDns)
+    registerCommand(CommandTrace)
 
   def getByName(name: String): Command =
     commands.find(_.name.equalsIgnoreCase(name)) match
