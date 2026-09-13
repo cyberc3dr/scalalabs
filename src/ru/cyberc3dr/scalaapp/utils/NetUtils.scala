@@ -27,6 +27,23 @@ case class Hop(
   latency: Double
 )
 
+enum DiagnosticState:
+  case NoInterface
+  case GatewayUnavailable
+  case NoInternet
+  case DnsIssue
+  case ResourceUnavailable
+  case Unstable
+  case Good
+
+case class DiagnosticResult(
+  state: DiagnosticState,
+  pings: Option[List[PingStats]],
+  dns: Option[List[DnsStats]],
+  https: Option[List[CurlResult]],
+  trace: Option[TraceStats]
+)
+
 @JsonIgnoreProperties(ignoreUnknown = true) // Нам нужны не все поля
 case class CurlResult(
   @JsonProperty("url") url: String,
@@ -59,7 +76,7 @@ object NetUtils:
     buf.toList
 
   def ping(address: String, count: Int): PingStats =
-    if(!EnvironmentChecker.isAvailable("ping")) then
+    if !EnvironmentChecker.isAvailable("ping") then
       throw IllegalStateException("Команда ping недоступна.")
     
     val result = executeCommand(s"ping -c $count $address")
@@ -97,7 +114,7 @@ object NetUtils:
     PingStats(address, packetsSent, packetsReceived, lossPercent, minimalLatency, avgLatency, maxLatency)
 
   def curl(address: String): CurlResult =
-    if (!EnvironmentChecker.isAvailable("curl")) then
+    if !EnvironmentChecker.isAvailable("curl") then
       throw IllegalStateException("Команда curl недоступна.")
     
     val result = executeCommand(s"curl -sL -o /dev/null -w \"%{json}\" $address")
@@ -106,7 +123,7 @@ object NetUtils:
     JsonParser.fromJson[CurlResult](json)
 
   def dig(address: String): DnsStats =
-    if (!EnvironmentChecker.isAvailable("dig")) then
+    if !EnvironmentChecker.isAvailable("dig") then
       throw IllegalStateException("Команда dig недоступна.")
     
     val result = executeCommand(s"dig $address")
@@ -139,12 +156,12 @@ object NetUtils:
       case None => throw IllegalStateException("Не удалось обнаружить шлюз - вы не подключены к сети или находитесь под VPN")
 
   def traceroute(address: String, count: Int): TraceStats =
-    if (!EnvironmentChecker.isAvailable("traceroute")) then
+    if !EnvironmentChecker.isAvailable("traceroute") then
       throw IllegalStateException("Команда traceroute недоступна.")
     
     val result = executeCommand(s"traceroute -m $count -q 1 -n $address")
 
-    if(result.exists(_.contains("unknown host"))) then
+    if result.exists(_.contains("unknown host")) then
       throw IllegalStateException("Хост не существует.")
 
     val hops = result

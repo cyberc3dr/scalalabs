@@ -5,6 +5,8 @@ import scala.collection.mutable.ListBuffer
 object CommandRegistry:
 
   private val commands = ListBuffer[Command]()
+  
+  // todo - сделать автоматический usage
 
   def registerCommand(command: Command): Unit = commands += command
 
@@ -17,6 +19,7 @@ object CommandRegistry:
     registerCommand(CommandHttp)
     registerCommand(CommandDns)
     registerCommand(CommandTrace)
+    registerCommand(CommandDiagnose)
 
   def getByName(name: String): Command =
     commands.find(_.name.equalsIgnoreCase(name)) match
