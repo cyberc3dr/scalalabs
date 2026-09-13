@@ -21,7 +21,7 @@ object InputHandler:
   private def handleCommand(name: String, ctx: CommandContext): Unit =
     try {
       val command = CommandRegistry.getByName(name)
-      command.execute(ctx)
+      if !command.execute(ctx) then println(s"Использование: ${command.usage}")
     } catch
       case e: CommandNotFoundException =>
         println(e.getMessage)

@@ -4,6 +4,7 @@ object CommandExit extends Command:
 
   override val name: String = "exit"
 
-  override def execute(ctx: CommandContext): Unit =
+  override def execute(ctx: CommandContext): Boolean =
     println("Выключение...")
     System.exit(0)
+    true

@@ -9,13 +9,12 @@ import scala.util.{Failure, Success, Try}
 
 object CommandDns extends Command:
   override val name: String = "dns"
+  override val usage: String = "dns <адрес>"
 
-  override def execute(ctx: CommandContext): Unit =
+  override def execute(ctx: CommandContext): Boolean =
     val buf = ctx.buf
     
-    if !buf.hasNext then
-      println("Использование: dns <адрес>")
-      return
+    if !buf.hasNext then return false
       
     val address = buf.getString
 
@@ -25,6 +24,7 @@ object CommandDns extends Command:
 
     val result = Try(Await.result(future, 5.seconds)) match
       case Success(value) => Logging.format(value)
-      case Failure(e) => println(s"Ошибка: ${e.getMessage}"); return
+      case Failure(e) => println(s"Ошибка: ${e.getMessage}"); return true
 
     println(result)
+    true

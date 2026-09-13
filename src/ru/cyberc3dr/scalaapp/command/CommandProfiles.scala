@@ -5,7 +5,7 @@ import ru.cyberc3dr.scalaapp.App
 object CommandProfiles extends Command {
   override val name: String = "profiles"
 
-  override def execute(ctx: CommandContext): Unit =
+  override def execute(ctx: CommandContext): Boolean =
     // App.config ?: throw
     // с lateinit оно вообще notnull будет
     // UPD: мне нравится такой синтаксис, пойдёт
@@ -40,4 +40,5 @@ object CommandProfiles extends Command {
     }
 
     println(builder.toString())
+    true
 }

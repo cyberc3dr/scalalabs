@@ -6,19 +6,19 @@ import scala.util.{Try, Success, Failure}
 
 object CommandTrace extends Command:
   override val name: String = "trace"
+  override val usage: String = "trace <адрес> (макс. кол-во хопов)"
 
-  override def execute(ctx: CommandContext): Unit =
+  override def execute(ctx: CommandContext): Boolean =
     val buf = ctx.buf
     
-    if !buf.hasNext then
-      println("Использование: trace <адрес> (макс. кол-во хопов)")
-      return
+    if !buf.hasNext then return false
       
     val address = buf.getString(1)
     val hops = if buf.hasNext then buf.getInt else 15
     
     val result = Try(NetUtils.traceroute(address, hops)) match
       case Success(value) => Logging.format(value)
-      case Failure(e) => println(s"Ошибка: ${e.getMessage}"); return
+      case Failure(e) => println(s"Ошибка: ${e.getMessage}"); return true
       
     println(result)
+    true

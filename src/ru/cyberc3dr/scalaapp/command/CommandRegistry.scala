@@ -5,8 +5,6 @@ import scala.collection.mutable.ListBuffer
 object CommandRegistry:
 
   private val commands = ListBuffer[Command]()
-  
-  // todo - сделать автоматический usage
 
   def registerCommand(command: Command): Unit = commands += command
 
