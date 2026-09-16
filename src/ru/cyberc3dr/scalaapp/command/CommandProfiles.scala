@@ -4,6 +4,7 @@ import ru.cyberc3dr.scalaapp.App
 
 object CommandProfiles extends Command {
   override val name: String = "profiles"
+  override val aliases: Seq[String] = Seq("pr")
 
   override def execute(ctx: CommandContext): Boolean =
     // App.config ?: throw
@@ -11,7 +12,7 @@ object CommandProfiles extends Command {
     // UPD: мне нравится такой синтаксис, пойдёт
     val config = App.config match
       case Some(value) => value
-      case None => throw IllegalStateException("Конфигурация не загружена по какой то причине??")
+      case None => println("Ошибка: Конфигурация не загружена. Попробуйте перезагрузить."); return true
 
     val builder = StringBuilder()
 

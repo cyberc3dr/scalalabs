@@ -4,11 +4,14 @@ import ru.cyberc3dr.scalaapp.command.CommandRegistry
 import ru.cyberc3dr.scalaapp.model.{AppConfig, JsonParser}
 import ru.cyberc3dr.scalaapp.utils.EnvironmentChecker
 
+import scala.util.{Failure, Success, Try}
+
 // отступы вместо фигурных скобок это забавно
 object App:
 
   // как же убого
   // lateinit var config: AppConfig
+  // UPD: хотя option даже удобен в этом кейсе
   var config: Option[AppConfig] = None
 
   def main(args: Array[String]): Unit =
@@ -22,6 +25,10 @@ object App:
     InputHandler.start()
 
   def reloadConfiguration(): Unit =
-    config = Option(JsonParser.fromFile[AppConfig]("config.json"))
+    config = Try(JsonParser.fromFile[AppConfig]("config.json")) match
+      case Success(value) => Some(value)
+      // Jackson не даст подгрузить файл с неправильной структурой, а на остальное все равно
+      // У доменов, айпи адресов и так далее - нет четкой структуры, поэтому я не смогу ее проверить
+      case Failure(e) => println("Конфигурация не загружена!"); None
 
 end App

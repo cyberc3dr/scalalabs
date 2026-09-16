@@ -2,6 +2,11 @@ package ru.cyberc3dr.scalaapp.net
 
 import ru.cyberc3dr.scalaapp.utils.EnvironmentChecker
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Success, Try}
+
 case class TraceStats(
   address: String,
   hops: List[Hop],
@@ -41,7 +46,13 @@ def traceroute(address: String, count: Int): TraceStats =
   var ip = List(address)
   if address.exists(!_.isDigit) then
     // надо понять какой айпи у домена
-    ip = dig(address).addresses
+    val future = Future {
+      dig(address)
+    }
+
+    ip = Try(Await.result(future, 5.seconds)) match
+      case Success(value) => value.addresses
+      case Failure(e) => ip
 
   val success = ip.contains(hops.last.address)
 

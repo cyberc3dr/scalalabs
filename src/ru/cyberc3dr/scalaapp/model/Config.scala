@@ -14,7 +14,9 @@ case class Profile(
   externalIpTargets: List[String],
   dnsNames: List[String],
   httpTargets: List[String],
+  traceTarget: String,
   pingCount: Int,
+  // таймаут я поставлю только dig - потому что он долго выполняется без интернета
   timeoutMilliseconds: Int,
   maximumRouteHops: Int,
   thresholds: Thresholds
