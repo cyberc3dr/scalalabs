@@ -22,6 +22,6 @@ object App:
     InputHandler.start()
 
   def reloadConfiguration(): Unit =
-    config = Option(JsonParser.fromFile[AppConfig]("example.json"))
+    config = Option(JsonParser.fromFile[AppConfig]("config.json"))
 
 end App

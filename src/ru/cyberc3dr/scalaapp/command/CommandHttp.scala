@@ -1,6 +1,9 @@
 package ru.cyberc3dr.scalaapp.command
 
-import ru.cyberc3dr.scalaapp.utils.{Logging, NetUtils}
+import ru.cyberc3dr.scalaapp.net.curl
+import ru.cyberc3dr.scalaapp.utils.Logging
+
+import scala.util.{Failure, Success, Try}
 
 object CommandHttp extends Command:
   override val name: String = "http"
@@ -12,7 +15,9 @@ object CommandHttp extends Command:
     if !buf.hasNext then return false
 
     val address = buf.getString
-    val result = NetUtils.curl(address)
+    val result = Try(curl(address)) match
+      case Success(value) => value
+      case Failure(e) => println(s"Ошибка: ${e.getMessage}"); return true
     
     println(Logging.format(result))
     true

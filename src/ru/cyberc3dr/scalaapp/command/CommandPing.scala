@@ -1,8 +1,9 @@
 package ru.cyberc3dr.scalaapp.command
 
-import ru.cyberc3dr.scalaapp.utils.{Logging, NetUtils}
+import ru.cyberc3dr.scalaapp.net.ping
+import ru.cyberc3dr.scalaapp.utils.Logging
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 object CommandPing extends Command:
   override val name: String = "ping"
@@ -16,7 +17,7 @@ object CommandPing extends Command:
     val address = buf.getString(1)
     val pings = if buf.hasNext then buf.getInt else 10
     
-    val result = Try(NetUtils.ping(address, pings)) match
+    val result = Try(ping(address, pings)) match
       case Success(value) => Logging.format(value)
       case Failure(e) => println(s"Ошибка: ${e.getMessage}"); return true
       

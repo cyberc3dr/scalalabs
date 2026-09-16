@@ -1,5 +1,7 @@
 package ru.cyberc3dr.scalaapp.utils
 
+import ru.cyberc3dr.scalaapp.net.{CurlResult, DnsStats, PingStats, TraceStats}
+
 object Logging:
 
   def format(pingStats: PingStats): String =

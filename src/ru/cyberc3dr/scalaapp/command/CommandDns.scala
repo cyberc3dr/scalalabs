@@ -1,6 +1,7 @@
 package ru.cyberc3dr.scalaapp.command
 
-import ru.cyberc3dr.scalaapp.utils.{Logging, NetUtils}
+import ru.cyberc3dr.scalaapp.net.dig
+import ru.cyberc3dr.scalaapp.utils.Logging
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
@@ -19,7 +20,7 @@ object CommandDns extends Command:
     val address = buf.getString
 
     val future = Future {
-      NetUtils.dig(address)
+      dig(address)
     }
 
     val result = Try(Await.result(future, 5.seconds)) match
