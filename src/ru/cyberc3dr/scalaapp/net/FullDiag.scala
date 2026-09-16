@@ -122,16 +122,6 @@ def diag(profile: Profile): DiagnosticResult =
 
   // говнокод начинается здесь
 
-  if resourceIssuePresent then return DiagnosticResult(
-    state = ResourceUnavailable,
-    gateway = Some(gateway),
-    gatewayPing = Some(pingGateway),
-    pings = pings.flatten,
-    dns = dnsChecks.flatten,
-    https = httpChecks.flatten,
-    trace = tracer
-  )
-
   // короче надо еще проверить на странности
   val strangeThingsAppeared = pings.exists {
     case Some(ping) => ping.lossPercent == 100

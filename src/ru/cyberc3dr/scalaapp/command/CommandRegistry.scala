@@ -20,7 +20,7 @@ object CommandRegistry:
     registerCommand(CommandDiagnose)
 
   def getByName(name: String): Command =
-    commands.find(_.name.equalsIgnoreCase(name)) match
+    commands.find(cmd => cmd.name.equalsIgnoreCase(name) || cmd.aliases.contains(name.toLowerCase)) match
       case Some(cmd) => cmd
       case None => throw CommandNotFoundException(name)
 
