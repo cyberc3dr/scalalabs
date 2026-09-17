@@ -4,6 +4,8 @@ import ru.cyberc3dr.scalaapp.net.{CurlResult, DnsStats, PingStats, TraceStats}
 
 object Logging:
 
+  def debug(logs: String*): Unit = logs.foreach(it => println(s"DEBUG: $it"))
+
   def format(pingStats: PingStats): String =
     val sb = StringBuilder()
 
