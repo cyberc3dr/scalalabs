@@ -17,7 +17,8 @@
         "wikipedia.org"
       ],
       "httpTargets": [
-        "https://example.com"
+        "https://example.com",
+        "https://bit.ly"
       ],
       "traceTarget": "example.com",
       "pingCount": 10,

@@ -12,16 +12,16 @@ import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 import scala.util.chaining.scalaUtilChainingOps
 
-enum DiagnosticState:
-  case NoInterface
-  case GatewayUnavailable
-  case NoInternet
-  case DnsIssue
-  case ResourceUnavailable
-  case Unknown
-  case Unstable
-  case VeryUnstable
-  case Good
+enum DiagnosticState(val name: String):
+  case NoInterface extends DiagnosticState("Сетевой интерфейс не настроен")
+  case GatewayUnavailable extends DiagnosticState("Недоступен локальный шлюз")
+  case NoInternet extends DiagnosticState("Нет доступа в Интернет")
+  case DnsIssue extends DiagnosticState("Есть проблема с DNS")
+  case ResourceUnavailable extends DiagnosticState("Возможна проблема конкретного сайта")
+  case Unknown extends DiagnosticState("Однозначно определить проблему не удалось")
+  case Unstable extends DiagnosticState("Соединение нестабильно")
+  case VeryUnstable extends DiagnosticState("Соединение очень нестабильно")
+  case Good extends DiagnosticState("Всё работает штатно")
 
 case class DiagnosticResult(
   state: DiagnosticState,

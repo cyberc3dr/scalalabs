@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp.utils
 
-import ru.cyberc3dr.scalaapp.net.{CurlResult, DnsStats, PingStats, TraceStats}
+import ru.cyberc3dr.scalaapp.net.{CurlResult, DiagnosticResult, DnsStats, PingStats, TraceStats}
 
 object Logging:
 
@@ -97,6 +97,40 @@ object Logging:
     val success = trace.success
     sb.append(if success then "\nЦель достигнута.\n" else "\nЦель не достигнута.\n")
     sb.append(s"Переходов ${trace.hops.length}")
+
+    sb.toString()
+
+  def pingMicro(ping: PingStats): String = s"${ping.address}: ↑ ${ping.packetsSent} ↓ ${ping.packetsReceived} Loss ${ping.lossPercent}% | Min ${ping.minimalLatency} Avg ${String.format("%.2f", ping.avgLatency)} Max ${ping.maxLatency}"
+  def dnsMicro(dns: DnsStats): String = s"${dns.address}: ${if dns.success then "✅" else "❌"} | ⏱️ ${dns.time} | ${dns.addresses.mkString(", ")}"
+  def httpMicro(curl: CurlResult): String = s"${curl.url}: ${if curl.isAvailable then s"✅ ${curl.httpCode}" else "❌"} | ⏱️ ${String.format("%.2f", curl.timeTotalMs)} | SSL ${if curl.hasTlsError then "!!" else "OK"}${if curl.redirects > 0 then s" | => ${curl.urlEffective}" else ""}"
+
+  def format(diag: DiagnosticResult): String =
+    val sb = StringBuilder()
+
+    sb.append(s"Время выполнения: ${diag.time.toString}\n")
+    sb.append(s"Результат: ${diag.state.name}")
+
+    diag.gateway.foreach { it =>
+      sb.append(s"\n\nШлюз: $it")
+      diag.gatewayPing.foreach(ping => sb.append(s"\nПинг: ${pingMicro(ping)}"))
+    }
+
+    if diag.pings.nonEmpty then
+      sb.append("\n\nПинги:")
+      diag.pings.foreach(it => sb.append(s"\n${pingMicro(it)}"))
+
+    if diag.dns.nonEmpty then
+      sb.append("\n\nDNS:")
+      diag.dns.foreach(it => sb.append(s"\n${dnsMicro(it)}"))
+
+    if diag.https.nonEmpty then
+      sb.append("\n\nHTTP:")
+      diag.https.foreach(it => sb.append(s"\n${httpMicro(it)}"))
+
+    diag.trace.foreach { it =>
+      sb.append("\n\nTrace:\n")
+      sb.append(format(it))
+    }
 
     sb.toString()
 

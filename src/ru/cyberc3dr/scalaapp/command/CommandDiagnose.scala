@@ -2,6 +2,7 @@ package ru.cyberc3dr.scalaapp.command
 
 import ru.cyberc3dr.scalaapp.App
 import ru.cyberc3dr.scalaapp.net.diag
+import ru.cyberc3dr.scalaapp.utils.Logging
 
 object CommandDiagnose extends Command:
   override val name: String = "diagnose"
@@ -26,7 +27,9 @@ object CommandDiagnose extends Command:
       case Some(value) => value
       case None => println(s"Ошибка: профиль с именем $profileName не найден."); return true
 
-    diag(profile)
+    val diagnostic = diag(profile)
+
+    println(Logging.format(diagnostic))
 
     true
 
