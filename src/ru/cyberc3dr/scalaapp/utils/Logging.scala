@@ -28,18 +28,14 @@ object Logging:
     val badLoss = pingStats.lossPercent > 0
     val badLatency = pingStats.maxLatency - pingStats.minimalLatency > 20
 
-    if(badLoss && badLatency) {
-      sb.append("Состояние: нестабильное соединение\n")
-      sb.append("Причина: обнаружены потери пакетов и скачки задержки")
-    } else if(badLoss) {
-      sb.append("Состояние: нестабильное соединение\n")
-      sb.append("Причина: обнаружены потери пакетов")
-    } else if(badLatency) {
-      sb.append("Состояние: нестабильное соединение\n")
-      sb.append("Причина: обнаружены скачки задержки")
-    } else {
-      sb.append("Состояние: соединение стабильно")
+    val message = (badLoss, badLatency) match {
+      case (true, true) => "Состояние: нестабильное соединение\nПричина: обнаружены потери пакетов и скачки задержки"
+      case (true, false) => "Состояние: нестабильное соединение\nПричина: обнаружены потери пакетов"
+      case (false, true) => "Состояние: нестабильное соединение\nПричина: обнаружены скачки задержки"
+      case _ => "Состояние: соединение стабильно"
     }
+
+    sb.append(message)
 
     sb.toString()
 
