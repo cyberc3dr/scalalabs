@@ -14,6 +14,9 @@ object JsonParser:
   def toJson(value: Any): String =
     mapper.writeValueAsString(value)
 
+  def saveToFile(value: Any, filePath: String): Unit =
+    mapper.writeValue(new File(filePath), value)
+
 /*
   котлин гораздо лучше, потому что мы можем
 

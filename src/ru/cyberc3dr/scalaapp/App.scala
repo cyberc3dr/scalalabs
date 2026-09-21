@@ -2,7 +2,7 @@ package ru.cyberc3dr.scalaapp
 
 import ru.cyberc3dr.scalaapp.command.CommandRegistry
 import ru.cyberc3dr.scalaapp.model.{AppConfig, JsonParser}
-import ru.cyberc3dr.scalaapp.utils.EnvironmentChecker
+import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, HistoryManager}
 
 import scala.util.{Failure, Success, Try}
 
@@ -30,5 +30,7 @@ object App:
       // Jackson не даст подгрузить файл с неправильной структурой, а на остальное все равно
       // У доменов, айпи адресов и так далее - нет четкой структуры, поэтому я не смогу ее проверить
       case Failure(e) => println("Конфигурация не загружена! Проверьте синтаксис."); None
+      
+    if config.isDefined then HistoryManager.load()
 
 end App

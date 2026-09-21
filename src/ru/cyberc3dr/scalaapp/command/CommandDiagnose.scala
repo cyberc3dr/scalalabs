@@ -1,8 +1,10 @@
 package ru.cyberc3dr.scalaapp.command
 
 import ru.cyberc3dr.scalaapp.App
+import ru.cyberc3dr.scalaapp.utils.{HistoryManager, Logging}
 import ru.cyberc3dr.scalaapp.net.diag
-import ru.cyberc3dr.scalaapp.utils.Logging
+
+import scala.util.{Failure, Success, Try}
 
 object CommandDiagnose extends Command:
   override val name: String = "diagnose"
@@ -30,6 +32,15 @@ object CommandDiagnose extends Command:
     val diagnostic = diag(profile)
 
     println(Logging.format(diagnostic))
+
+    val id = Try(HistoryManager.save(diagnostic, profileName)) match
+      case Success(value) => value
+      case Failure(e) => {
+        e.printStackTrace()
+        println(s"Предупреждение: не удалось сохранить в историю: ${e.getMessage}"); return true
+      }
+
+    println(s"Диагностика сохранена: id=$id")
 
     true
 

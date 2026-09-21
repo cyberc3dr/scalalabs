@@ -1,5 +1,6 @@
 package ru.cyberc3dr.scalaapp.net
 
+import com.fasterxml.jackson.annotation.JsonValue
 import ru.cyberc3dr.scalaapp.model.Profile
 import ru.cyberc3dr.scalaapp.net.DiagnosticState.{GatewayUnavailable, Good, NoInterface, NoInternet, ResourceUnavailable, Unknown}
 import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, Logging}
@@ -12,7 +13,7 @@ import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 import scala.util.chaining.scalaUtilChainingOps
 
-enum DiagnosticState(val name: String):
+enum DiagnosticState(@JsonValue val name: String):
   case NoInterface extends DiagnosticState("Сетевой интерфейс не настроен")
   case GatewayUnavailable extends DiagnosticState("Недоступен локальный шлюз")
   case NoInternet extends DiagnosticState("Нет доступа в Интернет")
@@ -25,7 +26,6 @@ enum DiagnosticState(val name: String):
 
 case class DiagnosticResult(
   state: DiagnosticState,
-  time: Instant = Instant.now(),
   gateway: Option[String] = None,
   gatewayPing: Option[PingStats] = None,
   pings: List[PingStats] = List.empty,

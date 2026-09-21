@@ -102,8 +102,7 @@ object Logging:
 
   def format(diag: DiagnosticResult): String =
     val sb = StringBuilder()
-
-    sb.append(s"Время выполнения: ${diag.time.toString}\n")
+    
     sb.append(s"Результат: ${diag.state.name}")
 
     diag.gateway.foreach { it =>
