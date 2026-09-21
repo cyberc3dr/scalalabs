@@ -27,6 +27,8 @@ object JsonParser:
   а еще в котлине есть kotlinx serialization, а тут нет
 
   UPD: внутри Option/Some происходит стирание типа, используйте передачу через []
+  UPD 2: внутри List происходит стирание типа, используйте Array
+  TL;DR : инлайны в скале ужас, не используйте, потеряете кучу времени
  */
 
   inline def fromJson[T](json: String)(using ct: ClassTag[T]) : T =

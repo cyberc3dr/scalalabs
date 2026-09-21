@@ -12,10 +12,7 @@ object CommandDiagnose extends Command:
   override val aliases: Seq[String] = Seq("diag")
 
   override def execute(ctx: CommandContext): Boolean =
-    // костыль продакшн представляет фильм
-    // как сделать диагностику монолитно и в одном файле
-    // ну я просто хз как по нормальному сделать
-
+    val rbuf = ctx.reportBuffer
     val buf = ctx.buf
 
     if !buf.hasNext then return false
@@ -31,7 +28,8 @@ object CommandDiagnose extends Command:
 
     val diagnostic = diag(profile)
 
-    println(Logging.format(diagnostic))
+    val formatted = Logging.format(diagnostic)
+    println(formatted)
 
     val id = Try(HistoryManager.save(diagnostic, profileName)) match
       case Success(value) => value
@@ -42,6 +40,9 @@ object CommandDiagnose extends Command:
     Logging.info(s"Диагностика сохранена: id=$id")
     println(s"Диагностика сохранена: id=$id")
 
+    rbuf.appendLine(s"=== DIAGNOSE: $profileName (id=$id) ===")
+    rbuf.appendLine(formatted)
+    rbuf.appendLine("")
     true
 
 

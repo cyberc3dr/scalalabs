@@ -13,6 +13,7 @@ object CommandDns extends Command:
   override val usage: String = "dns <адрес>"
 
   override def execute(ctx: CommandContext): Boolean =
+    val rbuf = ctx.reportBuffer
     val buf = ctx.buf
     
     if !buf.hasNext then return false
@@ -28,4 +29,8 @@ object CommandDns extends Command:
       case Failure(e) => Logging.error(s"Ошибка DNS: ${e.getMessage}"); return true
 
     println(result)
+    
+    rbuf.appendLine(s"=== DNS: $address ===")
+    rbuf.appendLine(result)
+    rbuf.appendLine("")
     true

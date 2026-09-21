@@ -20,6 +20,7 @@ object CommandRegistry:
     registerCommand(CommandDiagnose)
     registerCommand(CommandHistory)
     registerCommand(CommandCompare)
+    registerCommand(CommandReport)
 
   def getByName(name: String): Command =
     commands.find(cmd => cmd.name.equalsIgnoreCase(name) || cmd.aliases.contains(name.toLowerCase)) match

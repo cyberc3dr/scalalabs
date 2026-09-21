@@ -10,6 +10,7 @@ object CommandHttp extends Command:
   override val usage: String = "http <адрес>"
 
   override def execute(ctx: CommandContext): Boolean =
+    val rbuf = ctx.reportBuffer
     val buf = ctx.buf
 
     if !buf.hasNext then return false
@@ -19,6 +20,11 @@ object CommandHttp extends Command:
       case Success(value) => value
       case Failure(e) => Logging.error(s"Ошибка HTTP: ${e.getMessage}"); return true
     
-    println(Logging.format(result))
+    val formatted = Logging.format(result)
+    println(formatted)
+    
+    rbuf.appendLine(s"=== HTTP: $address ===")
+    rbuf.appendLine(formatted)
+    rbuf.appendLine("")
     true
 

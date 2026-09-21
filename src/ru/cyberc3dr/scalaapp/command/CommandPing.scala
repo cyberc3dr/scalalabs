@@ -10,6 +10,7 @@ object CommandPing extends Command:
   override val usage: String = "ping <адрес> (количество пингов)"
 
   override def execute(ctx: CommandContext): Boolean =
+    val rbuf = ctx.reportBuffer
     val buf = ctx.buf
 
     if !buf.hasNext then return false
@@ -22,4 +23,8 @@ object CommandPing extends Command:
       case Failure(e) => Logging.error(s"Ошибка ping: ${e.getMessage}"); return true
       
     println(result)
+
+    rbuf.appendLine(s"=== PING: $address ($pings packets) ===")
+    rbuf.appendLine(result)
+    rbuf.appendLine("")
     true

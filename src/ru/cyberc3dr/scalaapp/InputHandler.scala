@@ -1,13 +1,13 @@
 package ru.cyberc3dr.scalaapp
 
-import ru.cyberc3dr.scalaapp.command.{CommandContext, CommandNotFoundException, CommandRegistry, StrBuffer}
+import ru.cyberc3dr.scalaapp.command.{CommandContext, CommandNotFoundException, CommandRegistry, ReportBuffer, StrBuffer}
 
 import java.util.Scanner
 
 // jline это не для меня.
 object InputHandler:
 
-  def start() : Unit =
+  def start(reportBuffer: ReportBuffer): Unit =
     println("Command line interface started.")
     val scanner = Scanner(System.in)
 
@@ -16,7 +16,7 @@ object InputHandler:
 
       if str.trim.nonEmpty then
         val buf = StrBuffer(str.split("\\s+"))
-        handleCommand(buf.getString(1), CommandContext(buf, scanner))
+        handleCommand(buf.getString(1), CommandContext(buf, scanner, reportBuffer))
 
   private def handleCommand(name: String, ctx: CommandContext): Unit =
     try {

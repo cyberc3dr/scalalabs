@@ -32,6 +32,7 @@ object CommandCompare extends Command:
   private def avgLat(ps: List[PingStats]): Double = ps.map(_.avgLatency).pipe(it => it.sum / it.size).toInt
 
   override def execute(ctx: CommandContext): Boolean =
+    val rbuf = ctx.reportBuffer
     if !ctx.buf.hasNext then return false
     val id1 = ctx.buf.getInt
     if !ctx.buf.hasNext then return false
@@ -72,6 +73,10 @@ object CommandCompare extends Command:
       case (sa, _)                                          => s"Качество внешнего соединения улучшилось (состояние: ${sa.name})."
 
     sb.append(s"\nВывод: $summary")
-    println(sb.toString)
-
+    val result = sb.toString
+    println(result)
+    
+    rbuf.appendLine(s"=== COMPARE: #$id1 vs #$id2 ===")
+    rbuf.appendLine(result)
+    rbuf.appendLine("")
     true

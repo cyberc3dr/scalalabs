@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp
 
-import ru.cyberc3dr.scalaapp.command.CommandRegistry
+import ru.cyberc3dr.scalaapp.command.{CommandRegistry, ReportBuffer}
 import ru.cyberc3dr.scalaapp.model.{AppConfig, ConfigValidator, JsonParser}
 import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, HistoryManager, Logging}
 
@@ -10,6 +10,7 @@ import scala.sys.addShutdownHook
 object App:
 
   var config: Option[AppConfig] = None
+  var reportBuffer: ReportBuffer = ReportBuffer()
 
   def main(args: Array[String]): Unit =
     reloadConfiguration()
@@ -28,7 +29,7 @@ object App:
       return
 
     CommandRegistry.registerDefaults()
-    InputHandler.start()
+    InputHandler.start(reportBuffer)
 
   def reloadConfiguration(): Unit =
     config = Try(JsonParser.fromFile[AppConfig]("config.json")) match

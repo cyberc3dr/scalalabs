@@ -10,6 +10,7 @@ object CommandTrace extends Command:
   override val usage: String = "trace <адрес> (макс. кол-во хопов)"
 
   override def execute(ctx: CommandContext): Boolean =
+    val rbuf = ctx.reportBuffer
     val buf = ctx.buf
     
     if !buf.hasNext then return false
@@ -22,4 +23,8 @@ object CommandTrace extends Command:
       case Failure(e) => Logging.error(s"Ошибка traceroute: ${e.getMessage}"); return true
       
     println(result)
+    
+    rbuf.appendLine(s"=== TRACE: $address (max $hops hops) ===")
+    rbuf.appendLine(result)
+    rbuf.appendLine("")
     true
