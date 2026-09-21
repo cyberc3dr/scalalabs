@@ -161,9 +161,11 @@ def diag(profile: Profile): DiagnosticResult =
     ResourceUnavailable
   else if strangeThingsAppeared then
     Unknown
+  else if traceFailed then
+    Unknown
   else Good
 
-  if resourceIssuePresent || strangeThingsAppeared then return DiagnosticResult(
+  if resourceIssuePresent || strangeThingsAppeared || traceFailed then return DiagnosticResult(
     state = status,
     gateway = Some(gateway),
     gatewayPing = Some(pingGateway),
