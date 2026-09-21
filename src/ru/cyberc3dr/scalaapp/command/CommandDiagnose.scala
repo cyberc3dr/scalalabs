@@ -22,12 +22,12 @@ object CommandDiagnose extends Command:
 
     val config = App.config match
       case Some(value) => value
-      case None => println("Ошибка: Конфигурация не загружена. Попробуйте перезагрузить."); return true
+      case None => Logging.error("Конфигурация не загружена. Попробуйте перезагрузить."); return true
 
     val profileName = buf.getString(1)
     val profile = config.profiles.get(profileName) match
       case Some(value) => value
-      case None => println(s"Ошибка: профиль с именем $profileName не найден."); return true
+      case None => Logging.error(s"Профиль с именем $profileName не найден."); return true
 
     val diagnostic = diag(profile)
 
@@ -35,11 +35,11 @@ object CommandDiagnose extends Command:
 
     val id = Try(HistoryManager.save(diagnostic, profileName)) match
       case Success(value) => value
-      case Failure(e) => {
-        e.printStackTrace()
-        println(s"Предупреждение: не удалось сохранить в историю: ${e.getMessage}"); return true
-      }
+      case Failure(e) =>
+        Logging.error(s"Не удалось сохранить в историю: ${e.getMessage}")
+        return true
 
+    Logging.info(s"Диагностика сохранена: id=$id")
     println(s"Диагностика сохранена: id=$id")
 
     true

@@ -1,10 +1,58 @@
 package ru.cyberc3dr.scalaapp.utils
 
+import ru.cyberc3dr.scalaapp.model.AppConfig
 import ru.cyberc3dr.scalaapp.net.{CurlResult, DiagnosticResult, DnsStats, PingStats, TraceStats}
+
+import java.io.{FileWriter, PrintWriter}
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 object Logging:
 
-  def debug(logs: String*): Unit = logs.foreach(it => println(s"DEBUG: $it"))
+  private var config: Option[AppConfig] = None
+  private var logWriter: Option[PrintWriter] = None
+
+  def init(cfg: AppConfig): Unit =
+    config = Some(cfg)
+    logWriter = Some(PrintWriter(FileWriter(cfg.logFile, true)))
+
+  def close(): Unit =
+    logWriter.foreach(_.close())
+    logWriter = None
+
+  private def writeToFile(level: String, message: String): Unit =
+    logWriter.foreach { writer =>
+      val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+      writer.println(s"$timestamp $level  $message")
+      writer.flush()
+    }
+
+  private def writeToTerminalIfDebug(level: String, message: String): Unit =
+    config.foreach { cfg =>
+      if cfg.debug then
+        println(s"$level: $message")
+    }
+
+  private def writeToTerminal(level: String, message: String): Unit =
+    println(s"$level: $message")
+
+  def info(message: String): Unit =
+    writeToFile("INFO", message)
+    writeToTerminalIfDebug("INFO", message)
+
+  def warn(message: String): Unit =
+    writeToFile("WARN", message)
+    writeToTerminalIfDebug("WARN", message)
+
+  def error(message: String): Unit =
+    writeToFile("ERROR", message)
+    writeToTerminal("ERROR", message)
+
+  def debug(logs: String*): Unit =
+    logs.foreach { it =>
+      writeToFile("DEBUG", it)
+      writeToTerminalIfDebug("DEBUG", it)
+    }
 
   def format(pingStats: PingStats): String =
     val sb = StringBuilder()

@@ -35,6 +35,8 @@ case class DiagnosticResult(
 )
 
 def diag(profile: Profile): DiagnosticResult =
+  Logging.info(s"Начата диагностика: profile=${profile.description}")
+
   // попробуем найти кто здесь gateway
   Logging.debug("Пытаемся найти gateway...")
   val gateway = Try(getGateway) match
@@ -48,15 +50,16 @@ def diag(profile: Profile): DiagnosticResult =
     case Success(value) => value
     case Failure(e) => return DiagnosticResult(GatewayUnavailable, gateway = Some(gateway))
 
-  Logging.debug("", "Пинг до gateway прошел.")
+  Logging.debug("Пинг до gateway прошел.")
 
   if pingGateway.lossPercent > 0 then return DiagnosticResult(GatewayUnavailable, gateway = Some(gateway), gatewayPing = Some(pingGateway))
 
+  Logging.info("Проверка завершена: type=gateway, result=success")
   Logging.debug("Потерь 0%")
 
   // короче класс, gateway доступен проверяем инет
 
-  Logging.debug("", "Проверяем таргеты по пингу...")
+  Logging.debug("Проверяем таргеты по пингу...")
 
   val pings = profile.externalIpTargets
     .map { ip =>
@@ -68,6 +71,11 @@ def diag(profile: Profile): DiagnosticResult =
   // наверное следует делать вывод об отсутствии интернета по комбинации диагностик
   // скипаем это все дело если команды пинг нет
   val pingsFailed = pings.flatten.forall(_.lossPercent == 100) && EnvironmentChecker.isAvailable("ping")
+
+  pings.flatten.foreach { p =>
+    if p.lossPercent > 0 then
+      Logging.warn(s"Обнаружены потери пакетов: target=${p.address}, loss=${p.lossPercent}")
+  }
 
   if pingsFailed then Logging.debug("!!! Все пинги провалились")
 
@@ -85,13 +93,15 @@ def diag(profile: Profile): DiagnosticResult =
         case Failure(e) => None
     }
 
-  Logging.debug("", "Проверяем таргеты по DNS...")
+  Logging.debug("Проверяем таргеты по DNS...")
 
   val dnsFailed = dnsChecks.forall(_.isEmpty) && EnvironmentChecker.isAvailable("dig")
 
   if dnsFailed then Logging.debug("!!! Все DNS провалились")
 
-  Logging.debug("", "Проверяем таргеты по HTTP...")
+  Logging.info("DNS-проверка завершена: result=success")
+
+  Logging.debug("Проверяем таргеты по HTTP...")
 
   val httpChecks = profile.httpTargets
     .map { address =>
@@ -112,7 +122,7 @@ def diag(profile: Profile): DiagnosticResult =
     // короче все пошло не по плану да да
     // хз как это тестить - у меня нет тестового оборудования
 
-    Logging.debug("", "Диагностика упала, DNS или интернета нет")
+    Logging.debug("Диагностика упала, DNS или интернета нет")
 
     return DiagnosticResult(
       state = NoInternet,
@@ -125,7 +135,7 @@ def diag(profile: Profile): DiagnosticResult =
 
   // нука давай traceroute попробуем
 
-  Logging.debug("", "Пробуем traceroute...")
+  Logging.debug("Пробуем traceroute...")
 
   val tracer = Try(traceroute(profile.traceTarget, profile.maximumRouteHops)) match
     case Success(value) => Some(value)
@@ -144,7 +154,7 @@ def diag(profile: Profile): DiagnosticResult =
   //                         постфиксы тоже класс, in не нашел, нету видимо
   val resourceIssuePresent = httpChecks.flatten.pipe(it => 1 until it.length contains it.count(_.isAvailable))
 
-  if resourceIssuePresent then Logging.debug("", "!!! Какие то из ресурсов не ответили")
+  if resourceIssuePresent then Logging.debug("!!! Какие то из ресурсов не ответили")
   // если хотя бы один ответил - значит проблема в остальных
 
   // говнокод начинается здесь
@@ -155,7 +165,7 @@ def diag(profile: Profile): DiagnosticResult =
     case None => true
   }
 
-  if resourceIssuePresent then Logging.debug("", "!!! Не все пинги прошли успешно")
+  if resourceIssuePresent then Logging.debug("!!! Не все пинги прошли успешно")
 
   var status = if resourceIssuePresent then
     ResourceUnavailable
@@ -195,7 +205,8 @@ def diag(profile: Profile): DiagnosticResult =
 
     case _ => DiagnosticState.Good
 
-  Logging.debug("", s"Вердикт: $status")
+  Logging.info(s"Диагностика завершена: conclusion=${status.name.toLowerCase.replace("ё", "е").replace(" ", "-")}")
+  Logging.debug(s"Вердикт: $status")
 
   DiagnosticResult(
     state = status,

@@ -3,6 +3,7 @@
   "historyFile": "diagnostic-history.json",
   "reportDirectory": "reports",
   "defaultProfile": "home",
+  "debug": false,
 
   "profiles": {
     "home": {

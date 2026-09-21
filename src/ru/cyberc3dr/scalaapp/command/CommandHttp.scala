@@ -17,7 +17,7 @@ object CommandHttp extends Command:
     val address = buf.getString
     val result = Try(curl(address)) match
       case Success(value) => value
-      case Failure(e) => println(s"Ошибка: ${e.getMessage}"); return true
+      case Failure(e) => Logging.error(s"Ошибка HTTP: ${e.getMessage}"); return true
     
     println(Logging.format(result))
     true

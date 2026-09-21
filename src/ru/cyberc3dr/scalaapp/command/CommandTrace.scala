@@ -19,7 +19,7 @@ object CommandTrace extends Command:
     
     val result = Try(traceroute(address, hops)) match
       case Success(value) => Logging.format(value)
-      case Failure(e) => println(s"Ошибка: ${e.getMessage}"); return true
+      case Failure(e) => Logging.error(s"Ошибка traceroute: ${e.getMessage}"); return true
       
     println(result)
     true

@@ -25,7 +25,7 @@ object CommandDns extends Command:
 
     val result = Try(Await.result(future, 5.seconds)) match
       case Success(value) => Logging.format(value)
-      case Failure(e) => println(s"Ошибка: ${e.getMessage}"); return true
+      case Failure(e) => Logging.error(s"Ошибка DNS: ${e.getMessage}"); return true
 
     println(result)
     true

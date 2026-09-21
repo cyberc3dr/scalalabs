@@ -5,7 +5,8 @@ case class AppConfig(
   historyFile: String,
   reportDirectory: String,
   defaultProfile: String,
-  profiles: Map[String, Profile]
+  profiles: Map[String, Profile],
+  debug: Boolean = false
 )
 
 case class Profile(

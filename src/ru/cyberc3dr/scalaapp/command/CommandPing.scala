@@ -19,7 +19,7 @@ object CommandPing extends Command:
     
     val result = Try(ping(address, pings)) match
       case Success(value) => Logging.format(value)
-      case Failure(e) => println(s"Ошибка: ${e.getMessage}"); return true
+      case Failure(e) => Logging.error(s"Ошибка ping: ${e.getMessage}"); return true
       
     println(result)
     true

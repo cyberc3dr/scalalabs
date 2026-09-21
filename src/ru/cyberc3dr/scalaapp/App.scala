@@ -2,20 +2,30 @@ package ru.cyberc3dr.scalaapp
 
 import ru.cyberc3dr.scalaapp.command.CommandRegistry
 import ru.cyberc3dr.scalaapp.model.{AppConfig, ConfigValidator, JsonParser}
-import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, HistoryManager}
+import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, HistoryManager, Logging}
 
 import scala.util.{Failure, Success, Try}
+import scala.sys.addShutdownHook
 
 object App:
 
   var config: Option[AppConfig] = None
 
   def main(args: Array[String]): Unit =
-    EnvironmentChecker.check()
-
     reloadConfiguration()
 
-    println(config)
+    config.foreach(Logging.init)
+
+    addShutdownHook {
+      Logging.info("Приложение завершено")
+      Logging.close()
+    }
+
+    Logging.info("Приложение запущено")
+    Logging.info(s"Платформа определена: ${System.getProperty("os.name").toLowerCase}")
+
+    if !EnvironmentChecker.check() then
+      return
 
     CommandRegistry.registerDefaults()
     InputHandler.start()
@@ -27,11 +37,11 @@ object App:
         if validation.isValid then
           Some(value)
         else
-          println("Ошибки конфигурации:")
-          validation.errors.foreach(err => println(s"  - $err"))
+          Logging.error("Ошибки конфигурации:")
+          validation.errors.foreach(err => Logging.error(s"  - $err"))
           None
       case Failure(e) =>
-        println("Конфигурация не загружена! Проверьте синтаксис.")
+        Logging.error("Конфигурация не загружена! Проверьте синтаксис.")
         e.printStackTrace()
         None
 
