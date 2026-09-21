@@ -24,7 +24,7 @@ object App:
     Logging.info("Приложение запущено")
     Logging.info(s"Платформа определена: ${System.getProperty("os.name").toLowerCase}")
 
-    if !EnvironmentChecker.check() then
+    if !EnvironmentChecker.check(true) then
       return
 
     CommandRegistry.registerDefaults()
