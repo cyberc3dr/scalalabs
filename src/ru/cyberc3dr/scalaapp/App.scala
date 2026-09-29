@@ -48,6 +48,26 @@ object App:
         MenuLeaf("hello1", () => println("1111")),
         MenuLeaf("hello2", () => println("234678")),
         MenuLeaf("hello3", () => println("54215")),
+        MenuContainer("menu5", Seq(
+          MenuLeaf("hello1", () => println("1111")),
+          MenuLeaf("hello2", () => println("234678")),
+          MenuLeaf("hello3", () => println("54215")),
+          MenuContainer("menu5", Seq(
+            MenuLeaf("hello1", () => println("1111")),
+            MenuLeaf("hello2", () => println("234678")),
+            MenuLeaf("hello3", () => println("54215")),
+            MenuContainer("menu5", Seq(
+              MenuLeaf("hello1", () => println("1111")),
+              MenuLeaf("hello2", () => println("234678")),
+              MenuLeaf("hello3", () => println("54215")),
+              MenuContainer("menu5", Seq(
+                MenuLeaf("hello1", () => println("1111")),
+                MenuLeaf("hello2", () => println("234678")),
+                MenuLeaf("hello3", () => println("54215")),
+              ))
+            ))
+          ))
+        ))
       ))
     ))
 
