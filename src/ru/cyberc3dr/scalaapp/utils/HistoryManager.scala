@@ -22,8 +22,12 @@ object HistoryManager:
     
     // нестираемое, какой же все таки ужасный инлайн в скале
     Try(JsonParser.fromFile[Array[HistoryEntry]](filePath)) match
-      case Success(entries) => cache.addAll(entries)
-      case Failure(_) => // повреждённый файл или нет файла — начинаем с пустой истории
+      case Success(entries) =>
+        cache.addAll(entries)
+        Logging.info(s"История загружена: записей=${entries.length}")
+      case Failure(e) =>
+        Logging.warn(s"Не удалось загрузить историю (файл поврежден или отсутствует): ${e.getMessage}")
+        // повреждённый файл или нет файла — начинаем с пустой истории
 
   def save(result: DiagnosticResult, profileName: String): Int =
     // может ничего не быть в принципе
@@ -32,6 +36,7 @@ object HistoryManager:
     cache += entry
     
     JsonParser.saveToFile(cache.toList, filePath)
+    Logging.info(s"История сохранена: id=$id, профиль=$profileName")
     id
 
   def getAll: List[HistoryEntry] = cache.toList

@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp.net
 
-import ru.cyberc3dr.scalaapp.utils.EnvironmentChecker
+import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, Logging}
 
 case class PingStats(
   address: String,
@@ -16,13 +16,13 @@ def ping(address: String, count: Int): PingStats =
   if !EnvironmentChecker.isAvailable("ping") then
     throw IllegalStateException("Команда ping недоступна.")
 
-  val result = executeCommand(s"ping -c $count $address")
+  val cmd = s"ping -c $count $address"
+  val result = executeCommand(cmd, "ping", address)
 
-  if (result.exists(_.contains("Unknown host"))) {
+  if result.output.exists(_.contains("Unknown host")) then
     throw IllegalStateException("Хост не существует.")
-  }
 
-  val latencies = result
+  val latencies = result.output
     .filter(_.contains("bytes from"))
     .map(_.split("\\s+")
       .takeRight(2).head // получить два с конца и взять первый слева
@@ -40,12 +40,14 @@ def ping(address: String, count: Int): PingStats =
     maxLatency = latencies.max
   }
 
-  val stats = result(
-    result.indexWhere(_.contains("ping statistics")) + 1
+  val stats = result.output(
+    result.output.indexWhere(_.contains("ping statistics")) + 1
   ).split(", ")
 
   val packetsSent = stats(0).split("\\s+").head.toInt
   val packetsReceived = stats(1).split("\\s+").head.toInt
   val lossPercent = stats(2).split("\\s+").head.stripSuffix("%").toDouble
+
+  Logging.debug(s"Ping результат: адрес=$address, отправлено=$packetsSent, получено=$packetsReceived, потеря=$lossPercent%, min=$minimalLatency, avg=$avgLatency, max=$maxLatency")
 
   PingStats(address, packetsSent, packetsReceived, lossPercent, minimalLatency, avgLatency, maxLatency)

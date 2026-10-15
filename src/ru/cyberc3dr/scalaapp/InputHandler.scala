@@ -1,6 +1,7 @@
 package ru.cyberc3dr.scalaapp
 
 import ru.cyberc3dr.scalaapp.command.{CommandContext, CommandNotFoundException, CommandRegistry, ReportBuffer, StrBuffer}
+import ru.cyberc3dr.scalaapp.utils.Logging
 
 import java.util.Scanner
 
@@ -8,7 +9,7 @@ import java.util.Scanner
 object InputHandler:
 
   def start(reportBuffer: ReportBuffer): Unit =
-    println("Command line interface started.")
+    Logging.info("Command line interface started.")
     val scanner = Scanner(System.in)
 
     while true do
@@ -24,10 +25,10 @@ object InputHandler:
       if !command.execute(ctx) then println(s"Использование: ${command.usage}")
     } catch
       case e: CommandNotFoundException =>
+        Logging.warn(s"Неизвестная команда: $name")
         println(e.getMessage)
       case e: Exception =>
-        val exceptionClass = e.getClass.getSimpleName
-        println(s"Произошла ошибка при выполнении команды $name:")
+        Logging.error(s"Внутренняя ошибка при выполнении команды '$name': ${e.getClass.getSimpleName}: ${e.getMessage}")
         e.printStackTrace()
 
 end InputHandler

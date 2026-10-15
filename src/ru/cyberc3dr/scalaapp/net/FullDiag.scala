@@ -2,16 +2,15 @@ package ru.cyberc3dr.scalaapp.net
 
 import com.fasterxml.jackson.annotation.JsonValue
 import ru.cyberc3dr.scalaapp.model.Profile
-import ru.cyberc3dr.scalaapp.net.DiagnosticState.{GatewayUnavailable, Good, NoInterface, NoInternet, ResourceUnavailable, Unknown}
+import ru.cyberc3dr.scalaapp.net.DiagnosticState.*
 import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, Logging}
 
-import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
-import scala.util.{Failure, Success, Try}
 import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.chaining.scalaUtilChainingOps
+import scala.util.{Failure, Success, Try}
 
 enum DiagnosticState(@JsonValue val name: String):
   case NoInterface extends DiagnosticState("Сетевой интерфейс не настроен")

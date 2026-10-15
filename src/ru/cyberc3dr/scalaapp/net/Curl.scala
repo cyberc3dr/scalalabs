@@ -22,7 +22,7 @@ def curl(address: String): CurlResult =
   if !EnvironmentChecker.isAvailable("curl") then
     throw IllegalStateException("Команда curl недоступна.")
 
-  val result = executeCommand(s"curl -sL -o /dev/null -w \"%{json}\" $address")
-  val json = result.head
+  val result = executeCommand(s"curl -sL -o /dev/null -w \"%{json}\" $address", "curl", address)
+  val json = result.output.head
 
   JsonParser.fromJson[CurlResult](json)
