@@ -8,6 +8,7 @@ import scala.util.{Failure, Success, Try}
 object CommandPing extends Command:
   override val name: String = "ping"
   override val usage: String = "ping <адрес> (количество пингов)"
+  override val description: String = "Пинг узла по адресу"
 
   override def execute(ctx: CommandContext): Boolean =
     val rbuf = ctx.reportBuffer

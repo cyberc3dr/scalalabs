@@ -11,6 +11,7 @@ import scala.util.Try
 object CommandReport extends Command:
   override val name: String = "report"
   override val usage: String = "report [имя_файла]"
+  override val description: String = "Выгрузка накопленных отчётов в файл"
 
   override def execute(ctx: CommandContext): Boolean =
     val buf = ctx.buf

@@ -10,6 +10,7 @@ import scala.util.chaining.scalaUtilChainingOps
 object CommandCompare extends Command:
   override val name: String = "compare"
   override val usage: String = "compare <id1> <id2>"
+  override val description: String = "Сравнение двух диагностик из истории"
 
   private def loss(p: Option[PingStats]): String = p match
     case Some(value) => value.lossPercent.toString + "%"

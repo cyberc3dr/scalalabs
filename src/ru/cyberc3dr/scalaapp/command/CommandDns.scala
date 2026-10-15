@@ -11,6 +11,7 @@ import scala.util.{Failure, Success, Try}
 object CommandDns extends Command:
   override val name: String = "dns"
   override val usage: String = "dns <адрес>"
+  override val description: String = "DNS-resolve адреса (dig)"
 
   override def execute(ctx: CommandContext): Boolean =
     val rbuf = ctx.reportBuffer

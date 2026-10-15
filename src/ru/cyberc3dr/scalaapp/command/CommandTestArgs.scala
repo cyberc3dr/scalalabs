@@ -2,6 +2,7 @@ package ru.cyberc3dr.scalaapp.command
 
 object CommandTestArgs extends Command:
   override val name: String = "testargs"
+  override val description: String = "Тест разбора аргументов командной строки"
   override val usage: String = "testargs <int> <word> (remaining)"
 
   override def execute(ctx: CommandContext): Boolean =

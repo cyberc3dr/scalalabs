@@ -8,6 +8,7 @@ import scala.util.{Failure, Success, Try}
 object CommandTrace extends Command:
   override val name: String = "trace"
   override val usage: String = "trace <адрес> (макс. кол-во хопов)"
+  override val description: String = "Трассировка маршрута до узла"
 
   override def execute(ctx: CommandContext): Boolean =
     val rbuf = ctx.reportBuffer

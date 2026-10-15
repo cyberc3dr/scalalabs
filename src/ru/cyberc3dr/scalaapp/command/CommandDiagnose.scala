@@ -9,6 +9,7 @@ import scala.util.{Failure, Success, Try}
 object CommandDiagnose extends Command:
   override val name: String = "diagnose"
   override val usage: String = "diagnose <профиль>"
+  override val description: String = "Полная диагностика по профилю с сохранением в историю"
   override val aliases: Seq[String] = Seq("diag")
 
   override def execute(ctx: CommandContext): Boolean =

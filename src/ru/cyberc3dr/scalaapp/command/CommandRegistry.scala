@@ -21,9 +21,15 @@ object CommandRegistry:
     registerCommand(CommandHistory)
     registerCommand(CommandCompare)
     registerCommand(CommandReport)
+    registerCommand(CommandHelp)
+
+  def getAll: Seq[Command] = commands.toSeq
+
+  def findByName(name: String): Option[Command] =
+    commands.find(cmd => cmd.name.equalsIgnoreCase(name) || cmd.aliases.contains(name.toLowerCase))
 
   def getByName(name: String): Command =
-    commands.find(cmd => cmd.name.equalsIgnoreCase(name) || cmd.aliases.contains(name.toLowerCase)) match
+    findByName(name) match
       case Some(cmd) => cmd
       case None => throw CommandNotFoundException(name)
 

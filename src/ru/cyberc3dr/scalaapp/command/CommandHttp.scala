@@ -8,6 +8,7 @@ import scala.util.{Failure, Success, Try}
 object CommandHttp extends Command:
   override val name: String = "http"
   override val usage: String = "http <адрес>"
+  override val description: String = "HTTP-запрос по адресу (curl)"
 
   override def execute(ctx: CommandContext): Boolean =
     val rbuf = ctx.reportBuffer

@@ -4,5 +4,6 @@ package ru.cyberc3dr.scalaapp.command
 trait Command:
   val name: String
   val usage: String = name
+  val description: String = ""
   val aliases: Seq[String] = Seq.empty[String]
   def execute(ctx: CommandContext): Boolean

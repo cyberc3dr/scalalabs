@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter
 object CommandHistory extends Command:
   override val name: String = "history"
   override val usage: String = "history"
+  override val description: String = "Список сохранённых диагностик"
 
   private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     .withZone(ZoneId.systemDefault())

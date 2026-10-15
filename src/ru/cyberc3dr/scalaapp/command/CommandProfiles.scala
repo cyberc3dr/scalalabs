@@ -4,6 +4,7 @@ import ru.cyberc3dr.scalaapp.App
 
 object CommandProfiles extends Command {
   override val name: String = "profiles"
+  override val description: String = "Список профилей из конфигурации"
   override val aliases: Seq[String] = Seq("pr")
 
   override def execute(ctx: CommandContext): Boolean =
