@@ -11,7 +11,7 @@ scala {
 
 application {
     // Define the main class for the application.
-    mainClass = "ru.cyberc3dr.scalaapp.App"
+    mainClass = "ru.cyberc3dr.scalaapp.Main"
 }
 
 repositories {
