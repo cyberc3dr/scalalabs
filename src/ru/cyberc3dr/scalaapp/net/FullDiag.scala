@@ -106,11 +106,15 @@ def diag(profile: Profile): DiagnosticResult =
   if curlFailed then Logging.debug("!!! Все HTTP не ответили")
 
   if dnsFailed then
+    var state = DiagnosticState.DnsIssue
+
+    if pingsFailed && curlFailed then state = NoInternet
+
     // нет ни DNS ни интернета (историческое поведение: считается полным отсутствием интернета)
     Logging.debug("Диагностика упала, DNS или интернета нет")
 
     return DiagnosticResult(
-      state = NoInternet,
+      state = state,
       gateway = Some(gateway),
       gatewayPing = Some(pingGateway),
       pings = pings.flatten,
