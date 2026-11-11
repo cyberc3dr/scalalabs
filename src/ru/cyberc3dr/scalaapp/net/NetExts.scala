@@ -1,12 +1,10 @@
 package ru.cyberc3dr.scalaapp.net
 
+import ru.cyberc3dr.scalaapp.errors.{AppError, GatewayNotFound}
 import ru.cyberc3dr.scalaapp.utils.Logging
 
 import scala.collection.mutable.ListBuffer
 import scala.sys.process.{ProcessLogger, stringToProcess}
-
-// по отдельным файлам ибо этот говнокод стало трудно читать
-// scala compiler разберется - это его обязанность
 
 case class CommandResult(
   output: List[String],
@@ -27,8 +25,9 @@ def executeCommand(cmd: String, utility: String, target: String): CommandResult 
 
   CommandResult(buf.toList, proc)
 
-def getGateway: String =
+def getGateway: Either[AppError, String] =
   val result = executeCommand("route -n get default", "route", "default gateway")
-  result.output.find(_.contains("gateway")) match
-    case Some(value) => value.split("\\s+").last
-    case None => throw IllegalStateException("Не удалось обнаружить шлюз - вы не подключены к сети или находитесь под VPN")
+  result.output
+    .find(_.contains("gateway"))
+    .map(_.split("\\s+").last)
+    .toRight(GatewayNotFound)

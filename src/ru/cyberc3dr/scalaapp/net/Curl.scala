@@ -1,8 +1,9 @@
 package ru.cyberc3dr.scalaapp.net
 
 import com.fasterxml.jackson.annotation.{JsonIgnoreProperties, JsonProperty}
+import ru.cyberc3dr.scalaapp.errors.{AppError, OutputParseFailed, UtilityUnavailable}
 import ru.cyberc3dr.scalaapp.model.JsonParser
-import ru.cyberc3dr.scalaapp.utils.EnvironmentChecker
+import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, Logging}
 
 @JsonIgnoreProperties(ignoreUnknown = true) // Нам нужны не все поля
 case class CurlResult(
@@ -18,11 +19,15 @@ case class CurlResult(
   def hasTlsError: Boolean = sslVerifyResult != 0
 }
 
-def curl(address: String): CurlResult =
-  if !EnvironmentChecker.isAvailable("curl") then
-    throw IllegalStateException("Команда curl недоступна.")
+def curl(address: String): Either[AppError, CurlResult] =
+  if !EnvironmentChecker.isAvailable("curl") then return Left(UtilityUnavailable("curl"))
 
   val result = executeCommand(s"curl -sL -o /dev/null -w \"%{json}\" $address", "curl", address)
-  val json = result.output.head
 
-  JsonParser.fromJson[CurlResult](json)
+  result.output.headOption match
+    case None => Left(OutputParseFailed("curl", address))
+    case Some(json) =>
+      JsonParser.fromJson[CurlResult](json).left.map { _ =>
+        Logging.error(s"Не удалось разобрать вывод curl: цель=$address, вывод=$json")
+        OutputParseFailed("curl", address)
+      }

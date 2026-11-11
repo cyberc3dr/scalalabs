@@ -10,7 +10,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.chaining.scalaUtilChainingOps
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 enum DiagnosticState(@JsonValue val name: String):
   case NoInterface extends DiagnosticState("Сетевой интерфейс не настроен")
@@ -38,16 +38,16 @@ def diag(profile: Profile): DiagnosticResult =
 
   // попробуем найти кто здесь gateway
   Logging.debug("Пытаемся найти gateway...")
-  val gateway = Try(getGateway) match
-    case Success(value) => value
+  val gateway = getGateway match
+    case Right(value) => value
     // хмм может нам повезло и дали в конфиге гетевей
-    case Failure(e) => if profile.gateway != "auto" then profile.gateway else return DiagnosticResult(NoInterface)
+    case Left(_) => if profile.gateway != "auto" then profile.gateway else return DiagnosticResult(NoInterface)
 
   Logging.debug(s"Gateway найден: $gateway. Пробуем пинг...")
 
-  val pingGateway = Try(ping(gateway, profile.pingCount)) match
-    case Success(value) => value
-    case Failure(e) => return DiagnosticResult(GatewayUnavailable, gateway = Some(gateway))
+  val pingGateway = ping(gateway, profile.pingCount) match
+    case Right(value) => value
+    case Left(_) => return DiagnosticResult(GatewayUnavailable, gateway = Some(gateway))
 
   Logging.debug("Пинг до gateway прошел.")
 
@@ -61,11 +61,7 @@ def diag(profile: Profile): DiagnosticResult =
   Logging.debug("Проверяем таргеты по пингу...")
 
   val pings = profile.externalIpTargets
-    .map { ip =>
-      Try(ping(ip, profile.pingCount)) match
-        case Success(value) => Some(value)
-        case Failure(e) => None
-    }
+    .map(ip => ping(ip, profile.pingCount).toOption)
 
   // наверное следует делать вывод об отсутствии интернета по комбинации диагностик
   // скипаем это все дело если команды пинг нет
@@ -80,7 +76,7 @@ def diag(profile: Profile): DiagnosticResult =
 
   val dnsChecks = profile.dnsNames
     .map { name =>
-      // Будем читать что NXDOMAIN не возможен в конфигурации
+      // Будем считать что NXDOMAIN не возможен в конфигурации
       // И юзер ввел на 100% существующие домены
       // Anyway NXDOMAIN означает что DNS сервер ответил
       val future = Future {
@@ -88,8 +84,8 @@ def diag(profile: Profile): DiagnosticResult =
       }
 
       Try(Await.result(future, profile.timeoutMilliseconds.millis)) match
-        case Success(value) => Some(value)
-        case Failure(e) => None
+        case Success(Right(value)) => Some(value)
+        case _ => None
     }
 
   Logging.debug("Проверяем таргеты по DNS...")
@@ -103,24 +99,14 @@ def diag(profile: Profile): DiagnosticResult =
   Logging.debug("Проверяем таргеты по HTTP...")
 
   val httpChecks = profile.httpTargets
-    .map { address =>
-      Try(curl(address)) match
-        case Success(value) => Some(value)
-        case Failure(e) => None
-    }
+    .map(address => curl(address).toOption)
 
   val curlFailed = httpChecks.flatten.forall(!_.isAvailable) && EnvironmentChecker.isAvailable("curl")
 
   if curlFailed then Logging.debug("!!! Все HTTP не ответили")
 
   if dnsFailed then
-    var state = DiagnosticState.DnsIssue
-
-    if pingsFailed && curlFailed then state = NoInternet
-
-    // короче все пошло не по плану да да
-    // хз как это тестить - у меня нет тестового оборудования
-
+    // нет ни DNS ни интернета (историческое поведение: считается полным отсутствием интернета)
     Logging.debug("Диагностика упала, DNS или интернета нет")
 
     return DiagnosticResult(
@@ -136,9 +122,7 @@ def diag(profile: Profile): DiagnosticResult =
 
   Logging.debug("Пробуем traceroute...")
 
-  val tracer = Try(traceroute(profile.traceTarget, profile.maximumRouteHops)) match
-    case Success(value) => Some(value)
-    case Failure(e) => None
+  val tracer = traceroute(profile.traceTarget, profile.maximumRouteHops).toOption
 
   // обязательное условие успеха - traceroute должен выполниться при наличии
   val traceFailed = !tracer.exists(_.success) && EnvironmentChecker.isAvailable("traceroute")
@@ -147,16 +131,10 @@ def diag(profile: Profile): DiagnosticResult =
 
   // let = pipe
   // also = tap
-  //                         httpChecks.filterNotNull().let { it.count { !it.isAvailable } in 1 until it.length }
-  //                         ну типа
-  //                         спасибо что until сделали
-  //                         постфиксы тоже класс, in не нашел, нету видимо
   val resourceIssuePresent = httpChecks.flatten.pipe(it => 1 until it.length contains it.count(_.isAvailable))
 
   if resourceIssuePresent then Logging.debug("!!! Какие то из ресурсов не ответили")
   // если хотя бы один ответил - значит проблема в остальных
-
-  // говнокод начинается здесь
 
   // короче надо еще проверить на странности
   val strangeThingsAppeared = pings.exists {

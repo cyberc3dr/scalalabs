@@ -1,16 +1,30 @@
 package ru.cyberc3dr.scalaapp.command
 
+import ru.cyberc3dr.scalaapp.errors.{AppError, HistoryNotFound, Internal}
+import ru.cyberc3dr.scalaapp.model.HistoryEntry
 import ru.cyberc3dr.scalaapp.net.{CurlResult, DnsStats, PingStats, TraceStats}
 import ru.cyberc3dr.scalaapp.utils.HistoryManager
 
 import scala.util.chaining.scalaUtilChainingOps
 
-// однострочники для match говнокод, имхо
-// лучше match case
-object CommandCompare extends Command:
-  override val name: String = "compare"
-  override val usage: String = "compare <id1> <id2>"
-  override val description: String = "Сравнение двух диагностик из истории"
+object CompareParser extends CommandParser:
+  // А тут for comprehension
+  // Вот это вместо
+  /*
+  args.getInt.flatMap { firstId =>
+    args.getInt.map { secondId =>
+      CompareCommand(firstId, secondId)
+    }
+  }
+   */
+  // все для людей
+  def parse(args: StrBuffer): Either[AppError, Command] =
+    for
+      firstId  <- args.getInt
+      secondId <- args.getInt
+    yield CompareCommand(firstId, secondId)
+
+object CompareExecutor extends CommandExecutor:
 
   private def loss(p: Option[PingStats]): String = p match
     case Some(value) => value.lossPercent.toString + "%"
@@ -32,21 +46,7 @@ object CommandCompare extends Command:
 
   private def avgLat(ps: List[PingStats]): Double = ps.map(_.avgLatency).pipe(it => it.sum / it.size).toInt
 
-  override def execute(ctx: CommandContext): Boolean =
-    val rbuf = ctx.reportBuffer
-    if !ctx.buf.hasNext then return false
-    val id1 = ctx.buf.getInt
-    if !ctx.buf.hasNext then return false
-    val id2 = ctx.buf.getInt
-    
-    val a = HistoryManager.getById(id1) match
-      case Some(value) => value
-      case None => println(s"Диагностика #$id1 не найдена."); return true
-    
-    val b = HistoryManager.getById(id2) match
-      case Some(value) => value
-      case None => println(s"Диагностика #$id2 не найдена."); return true
-
+  private def buildComparison(a: HistoryEntry, b: HistoryEntry): String =
     val r1 = a.result
     val r2 = b.result
 
@@ -74,10 +74,12 @@ object CommandCompare extends Command:
       case (sa, _)                                          => s"Качество внешнего соединения улучшилось (состояние: ${sa.name})."
 
     sb.append(s"\nВывод: $summary")
-    val result = sb.toString
-    println(result)
-    
-    rbuf.appendLine(s"=== COMPARE: #$id1 vs #$id2 ===")
-    rbuf.appendLine(result)
-    rbuf.appendLine("")
-    true
+    sb.toString
+
+  def execute(command: Command, ctx: CommandContext): Either[AppError, CommandSignal] = command match
+    case CompareCommand(firstId, secondId) =>
+      for
+        a <- HistoryManager.getById(firstId).toRight(HistoryNotFound(firstId))
+        b <- HistoryManager.getById(secondId).toRight(HistoryNotFound(secondId))
+      yield CommandResult(buildComparison(a, b), appendToReport = true)
+    case _ => Left(Internal("CompareExecutor получил чужую команду"))

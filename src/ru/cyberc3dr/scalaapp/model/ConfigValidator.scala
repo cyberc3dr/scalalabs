@@ -1,27 +1,25 @@
 package ru.cyberc3dr.scalaapp.model
 
 import java.net.{InetAddress, URI}
+import scala.util.Try
 
 object ConfigValidator:
 
   private def isValidIpAddress(address: String): Boolean =
     if address == "auto" then true
     else
-      try
-        val inetAddress = InetAddress.getByName(address)
-        !inetAddress.isLoopbackAddress && !inetAddress.isAnyLocalAddress
-      catch
-        case _: Exception => false
+      Try(InetAddress.getByName(address)).toOption match
+        case Some(inetAddress) => !inetAddress.isLoopbackAddress && !inetAddress.isAnyLocalAddress
+        case None => false
 
   private def isValidUrl(url: String): Boolean =
-    try
-      val uri = URI(url)
-      uri.getScheme != null && (uri.getScheme == "http" || uri.getScheme == "https") && uri.getHost != null
-    catch
-      case _: Exception => false
+    Try(URI(url)).toOption match
+      case Some(uri) =>
+        Option(uri.getScheme).exists(s => s == "http" || s == "https") && Option(uri.getHost).isDefined
+      case None => false
 
   private def isValidPath(path: String): Boolean =
-    path != null && path.nonEmpty && path.trim.nonEmpty
+    Option(path).exists(p => p.nonEmpty && p.trim.nonEmpty)
 
   def validateConfig(config: AppConfig): ValidationResult =
     val errors = collection.mutable.ListBuffer[String]()
@@ -35,10 +33,11 @@ object ConfigValidator:
     if !isValidPath(config.reportDirectory) then
       errors += "Путь к отчётам не указан"
 
-    if config.defaultProfile == null || config.defaultProfile.trim.isEmpty then
-      errors += "Отсутствует профиль по умолчанию"
-    else if !config.profiles.contains(config.defaultProfile) then
-      errors += s"Профиль по умолчанию '${config.defaultProfile}' не существует"
+    Option(config.defaultProfile).map(_.trim).filter(_.nonEmpty) match
+      case None => errors += "Отсутствует профиль по умолчанию"
+      case Some(name) =>
+        if !config.profiles.contains(name) then
+          errors += s"Профиль по умолчанию '$name' не существует"
 
     config.profiles.foreach { case (name, profile) =>
       errors ++= validateProfile(name, profile)
@@ -49,13 +48,15 @@ object ConfigValidator:
   private def validateProfile(profileName: String, profile: Profile): List[String] =
     val errors = collection.mutable.ListBuffer[String]()
 
-    if profile.externalIpTargets == null || profile.externalIpTargets.isEmpty then
+    if Option(profile.externalIpTargets).forall(_.isEmpty) then
       errors += s"Профиль '$profileName': не задано ни одной внешней цели"
 
-    if profile.gateway == null || profile.gateway.trim.isEmpty then
-      errors += s"Профиль '$profileName': адрес шлюза не указан"
-    else if !isValidIpAddress(profile.gateway) then
-      errors += s"Профиль '$profileName': адрес шлюза имеет неправильный формат"
+    Option(profile.gateway).map(_.trim).filter(_.nonEmpty) match
+      case None =>
+        errors += s"Профиль '$profileName': адрес шлюза не указан"
+      case Some(gateway) =>
+        if !isValidIpAddress(gateway) then
+          errors += s"Профиль '$profileName': адрес шлюза имеет неправильный формат"
 
     if profile.pingCount < 1 then
       errors += s"Профиль '$profileName': количество пакетов меньше единицы"
@@ -79,11 +80,12 @@ object ConfigValidator:
     if thresholds.criticalPacketLossPercent < 0 || thresholds.criticalPacketLossPercent > 100 then
       errors += s"Профиль '$profileName': критический процент потерь находится вне диапазона от 0 до 100"
 
-    if profile.httpTargets != null then
-      profile.httpTargets.foreach { url =>
+    Option(profile.httpTargets).foreach { targets =>
+      targets.foreach { url =>
         if !isValidUrl(url) then
           errors += s"Профиль '$profileName': HTTP-адрес '$url' имеет неправильный формат"
       }
+    }
 
     errors.toList
 

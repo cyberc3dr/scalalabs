@@ -1,10 +1,12 @@
 package ru.cyberc3dr.scalaapp.model
 
+import ru.cyberc3dr.scalaapp.errors.{AppError, ConfigMalformed, OutputParseFailed}
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.scala.DefaultScalaModule
 
 import java.io.File
 import scala.reflect.ClassTag
+import scala.util.Try
 
 object JsonParser:
   private val mapper = JsonMapper.builder()
@@ -29,14 +31,17 @@ object JsonParser:
   UPD: внутри Option/Some происходит стирание типа, используйте передачу через []
   UPD 2: внутри List происходит стирание типа, используйте Array
   TL;DR : инлайны в скале ужас, не используйте, потеряете кучу времени
+    
+  а, ну ладно
  */
 
-  inline def fromJson[T](json: String)(using ct: ClassTag[T]) : T =
-    mapper.readValue(json, ct.runtimeClass) match
-      case result: T => result
+  inline def fromJson[T](json: String)(using ct: ClassTag[T]): Either[AppError, T] =
+    Try(mapper.readValue(json, ct.runtimeClass).asInstanceOf[T])
+      .toEither.left.map(_ => OutputParseFailed("json", json.take(120)))
 
-  inline def fromFile[T](filePath: String)(using ct: ClassTag[T]) : T =
+  inline def fromFile[T](filePath: String)(using ct: ClassTag[T]): Either[AppError, T] =
     val file = File(filePath)
-    if !file.exists() then throw IllegalArgumentException(s"Файл по пути '$filePath' не найден.")
-    mapper.readValue(file, ct.runtimeClass) match
-      case result: T => result
+    if !file.exists() then Left(ConfigMalformed(filePath, "файл не найден"))
+    else
+      Try(mapper.readValue(file, ct.runtimeClass).asInstanceOf[T])
+        .toEither.left.map(e => ConfigMalformed(filePath, e.getMessage))

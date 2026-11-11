@@ -1,11 +1,12 @@
 package ru.cyberc3dr.scalaapp.net
 
+import ru.cyberc3dr.scalaapp.errors.{AppError, HostNotFound, UtilityUnavailable}
 import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, Logging}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 case class TraceStats(
   address: String,
@@ -18,15 +19,13 @@ case class Hop(
   latency: Double
 )
 
-def traceroute(address: String, count: Int): TraceStats =
-  if !EnvironmentChecker.isAvailable("traceroute") then
-    throw IllegalStateException("Команда traceroute недоступна.")
+def traceroute(address: String, count: Int): Either[AppError, TraceStats] =
+  if !EnvironmentChecker.isAvailable("traceroute") then return Left(UtilityUnavailable("traceroute"))
 
   val cmd = s"traceroute -m $count -q 1 -n $address"
   val result = executeCommand(cmd, "traceroute", address)
 
-  if result.output.exists(_.contains("unknown host")) then
-    throw IllegalStateException("Хост не существует.")
+  if result.output.exists(_.contains("unknown host")) then return Left(HostNotFound(address))
 
   val hops = result.output
     .filter(_.startsWith(" "))
@@ -52,13 +51,13 @@ def traceroute(address: String, count: Int): TraceStats =
     }
 
     ip = Try(Await.result(future, 5.seconds)) match
-      case Success(value) => value.addresses
-      case Failure(e) =>
-        Logging.warn(s"Не удалось разрешить домен для проверки трассировки: $address, ошибка: ${e.getMessage}")
+      case Success(Right(value)) => value.addresses
+      case _ =>
+        Logging.warn(s"Не удалось разрешить домен для проверки трассировки: $address")
         ip
 
-  val success = ip.contains(hops.last.address)
+  val success = hops.lastOption.exists(hop => ip.contains(hop.address))
 
   Logging.debug(s"Traceroute результат: адрес=$address, переходов=${hops.length}, успех=$success, последний хоп=${hops.lastOption.map(_.address).getOrElse("")}")
 
-  TraceStats(address, hops, success)
+  Right(TraceStats(address, hops, success))

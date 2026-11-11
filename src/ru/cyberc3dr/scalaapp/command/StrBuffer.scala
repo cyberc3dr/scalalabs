@@ -1,47 +1,49 @@
 package ru.cyberc3dr.scalaapp.command
 
-import java.util.NoSuchElementException
+import ru.cyberc3dr.scalaapp.errors.{AppError, InvalidArgument, MissingArgument}
 
+/** Курсор по словам введённой строки. */
 class StrBuffer(private val array: Array[String]):
 
   private var index = 0
 
   def hasNext: Boolean = index < array.length
 
-  def getInt: Int =
-    if !hasNext then throw NoSuchElementException("Попытка чтения за границами данных")
-
-    val str = array(index)
-    index += 1
-    str.toIntOption match
-      case Some(value) => value
-      case None => throw IllegalArgumentException(s"Не удалось перевести $str в Int на позиции $index")
-
-  def getDouble: Double =
-    if !hasNext then throw NoSuchElementException("Попытка чтения за границами данных")
-
-    val str = array(index)
-    index += 1
-    str.toDoubleOption match
-      case Some(value) => value
-      case None => throw IllegalArgumentException(s"Не удалось перевести $str в Double на позиции $index")
-
-  def getString(count: Int): String =
-    if count < 1 || !hasNext then return ""
-
-    val builder = StringBuilder()
-    val end = math.min(index + count, array.length)
-
-    while index < end do
-      builder.append(array(index))
+  def getInt: Either[AppError, Int] =
+    if !hasNext then Left(MissingArgument("целое число"))
+    else
+      val str = array(index)
       index += 1
-      if index < end then builder.append(" ")
+      str.toIntOption.toRight(InvalidArgument(str, "целое число"))
 
-    builder.toString()
+  /** Читает целое число, либо возвращает значение по умолчанию, если аргументов больше нет. */
+  def getIntOrElse(default: Int): Either[AppError, Int] =
+    if hasNext then getInt else Right(default)
 
-  def getString: String =
-    val remainingWords = array.length - index
-    getString(remainingWords)
+  def getDouble: Either[AppError, Double] =
+    if !hasNext then Left(MissingArgument("число"))
+    else
+      val str = array(index)
+      index += 1
+      str.toDoubleOption.toRight(InvalidArgument(str, "число"))
+
+  /** Считывает count слов, склеивая их пробелами. */
+  def getString(count: Int): Either[AppError, String] =
+    if count < 1 then Left(InvalidArgument(count.toString, "положительное количество слов"))
+    else if !hasNext then Left(MissingArgument("строка"))
+    else
+      val builder = StringBuilder()
+      val end = math.min(index + count, array.length)
+
+      while index < end do
+        builder.append(array(index))
+        index += 1
+        if index < end then builder.append(" ")
+
+      Right(builder.toString())
+
+  /** Считывает все оставшиеся слова */
+  def getRemaining: String =
+    getString(array.length - index).getOrElse("")
 
 end StrBuffer
-

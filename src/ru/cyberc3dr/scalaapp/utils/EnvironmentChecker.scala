@@ -62,7 +62,6 @@ object EnvironmentChecker {
     case "ifconfig" | "route" => "сетевых интерфейсов"
     case _ => cmd
 
-  def isAvailable(cmd: String): Boolean = availability.get(cmd) match
-    case Some(value) => value
-    case None => throw IllegalArgumentException("Команда введена неверно")
+  // неизвестная утилита - считаем недоступной, исключения тут не нужны
+  def isAvailable(cmd: String): Boolean = availability.getOrElse(cmd, false)
 }
