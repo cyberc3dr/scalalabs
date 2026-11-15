@@ -1,60 +1,51 @@
 package ru.cyberc3dr.scalaapp.utils
 
-import scala.collection.mutable
-import sys.process._
+import ru.cyberc3dr.scalaapp.errors.{AppError, PlatformNotSupported, UnknownUtility, UtilityUnavailable}
+import ru.cyberc3dr.scalaapp.ui.UI
 
-object EnvironmentChecker {
+import scala.sys.process.{ProcessLogger, stringToProcess}
+
+/** Результат проверки одной системной утилиты */
+case class UtilityCheck(name: String, available: Boolean)
+
+/** Отчёт о проверке окружения. */
+case class EnvironmentReport(checks: List[UtilityCheck]):
+  def available: List[UtilityCheck] = checks.filter(_.available)
+  def missing: List[UtilityCheck] = checks.filterNot(_.available)
+
+object EnvironmentChecker:
 
   private val cmds = List("ifconfig", "route", "ping", "nslookup", "dig", "traceroute", "curl")
-  private val availability = mutable.Map.empty[String, Boolean]
 
-  def check(): Boolean = check(true)
+  private var report: Option[EnvironmentReport] = None
 
-  def check(printToConsole: Boolean): Boolean = {
-    if !checkMacOS(printToConsole) then return false
-
-    val results = cmds.map { cmd =>
-      val output = s"which ${cmd}".!(ProcessLogger(_ => ()))
-      val isAvailable = output == 0
-      availability(cmd) = isAvailable
-      (cmd, isAvailable)
-    }
-
-    if printToConsole then {
-      println("Проверка системных утилит:")
-      println()
-      results.foreach { case (cmd, available) =>
-        val status = if available then "[+]" else "[-]"
-        println(s"$status $cmd")
-      }
-      println()
-
-      val missing = results.collect { case (cmd, false) => cmd }
-      missing.foreach { cmd =>
-        println(s"Проверка ${getCheckName(cmd)} будет недоступна:")
-        println(s"утилита $cmd не найдена.")
-        println()
-      }
-    }
-
-    val (available, missing) = results.partition { case (_, isAvailable) => isAvailable }
-    val availableCount = available.size
-    val missingCount = missing.size
-    Logging.debug(s"Проверка утилит завершена: available=$availableCount, missing=$missingCount")
-
-    true
-  }
-
-  private def checkMacOS(printToConsole: Boolean): Boolean = {
+  /** Полная проверка */
+  def check(ui: UI): Either[AppError, EnvironmentReport] =
     val os = System.getProperty("os.name").toLowerCase
-    if !os.contains("mac") then
-      if printToConsole then println("Ошибка: Это приложение работает только на macOS")
-      false
+    if !os.contains("mac") then Left(PlatformNotSupported(os))
     else
-      true
-  }
+      val checks = cmds.map { cmd =>
+        val isAvailable = s"which $cmd".!(ProcessLogger(_ => ())) == 0
+        UtilityCheck(cmd, isAvailable)
+      }
+      val value = EnvironmentReport(checks)
+      report = Some(value)
+      Right(value)
 
-  private def getCheckName(cmd: String): String = cmd match
+  def printReport(value: EnvironmentReport, ui: UI): Unit =
+    ui.writeLine("Проверка системных утилит:\n")
+    value.checks.foreach { check =>
+      val status = if check.available then "[+]" else "[-]"
+      ui.writeLine(s"$status ${check.name}")
+    }
+    ui.writeLine("")
+    value.missing.foreach { check =>
+      ui.writeLine(
+        s"Проверка ${checkName(check.name)} будет недоступна:\nутилита ${check.name} не найдена.\n"
+      )
+    }
+
+  private def checkName(cmd: String): String = cmd match
     case "traceroute" => "маршрута"
     case "dig" | "nslookup" => "DNS"
     case "curl" => "HTTP"
@@ -62,6 +53,16 @@ object EnvironmentChecker {
     case "ifconfig" | "route" => "сетевых интерфейсов"
     case _ => cmd
 
-  // неизвестная утилита - считаем недоступной, исключения тут не нужны
-  def isAvailable(cmd: String): Boolean = availability.getOrElse(cmd, false)
-}
+  def isAvailable(cmd: String): Either[AppError, Boolean] =
+    report match
+      case None => Left(UnknownUtility(cmd))
+      case Some(value) =>
+        value.checks.find(_.name == cmd) match
+          case Some(check) => Right(check.available)
+          case None => Left(UnknownUtility(cmd))
+
+  def requireAvailable(cmd: String): Either[AppError, Unit] =
+    isAvailable(cmd).flatMap {
+      case true => Right(())
+      case false => Left(UtilityUnavailable(cmd))
+    }

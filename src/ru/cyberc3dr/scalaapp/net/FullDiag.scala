@@ -65,7 +65,7 @@ def diag(profile: Profile): DiagnosticResult =
 
   // наверное следует делать вывод об отсутствии интернета по комбинации диагностик
   // скипаем это все дело если команды пинг нет
-  val pingsFailed = pings.flatten.forall(_.lossPercent == 100) && EnvironmentChecker.isAvailable("ping")
+  val pingsFailed = pings.flatten.forall(_.lossPercent == 100) && EnvironmentChecker.isAvailable("ping").getOrElse(false)
 
   pings.flatten.foreach { p =>
     if p.lossPercent > 0 then
@@ -90,7 +90,7 @@ def diag(profile: Profile): DiagnosticResult =
 
   Logging.debug("Проверяем таргеты по DNS...")
 
-  val dnsFailed = dnsChecks.forall(_.isEmpty) && EnvironmentChecker.isAvailable("dig")
+  val dnsFailed = dnsChecks.forall(_.isEmpty) && EnvironmentChecker.isAvailable("dig").getOrElse(false)
 
   if dnsFailed then Logging.debug("!!! Все DNS провалились")
 
@@ -101,7 +101,7 @@ def diag(profile: Profile): DiagnosticResult =
   val httpChecks = profile.httpTargets
     .map(address => curl(address).toOption)
 
-  val curlFailed = httpChecks.flatten.forall(!_.isAvailable) && EnvironmentChecker.isAvailable("curl")
+  val curlFailed = httpChecks.flatten.forall(!_.isAvailable) && EnvironmentChecker.isAvailable("curl").getOrElse(false)
 
   if curlFailed then Logging.debug("!!! Все HTTP не ответили")
 
@@ -129,7 +129,7 @@ def diag(profile: Profile): DiagnosticResult =
   val tracer = traceroute(profile.traceTarget, profile.maximumRouteHops).toOption
 
   // обязательное условие успеха - traceroute должен выполниться при наличии
-  val traceFailed = !tracer.exists(_.success) && EnvironmentChecker.isAvailable("traceroute")
+  val traceFailed = !tracer.exists(_.success) && EnvironmentChecker.isAvailable("traceroute").getOrElse(false)
 
   if traceFailed then Logging.debug("!!! Trace не был успешным")
 

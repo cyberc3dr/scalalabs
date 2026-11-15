@@ -13,7 +13,9 @@ case class DnsStats(
 )
 
 def dig(address: String): Either[AppError, DnsStats] =
-  if !EnvironmentChecker.isAvailable("dig") then return Left(UtilityUnavailable("dig"))
+  EnvironmentChecker.requireAvailable("dig") match
+    case Left(error) => return Left(error)
+    case Right(_) => ()
 
   val cmd = s"dig $address"
   val result = executeCommand(cmd, "dig", address)

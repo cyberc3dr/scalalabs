@@ -20,7 +20,9 @@ case class Hop(
 )
 
 def traceroute(address: String, count: Int): Either[AppError, TraceStats] =
-  if !EnvironmentChecker.isAvailable("traceroute") then return Left(UtilityUnavailable("traceroute"))
+  EnvironmentChecker.requireAvailable("traceroute") match
+    case Left(error) => return Left(error)
+    case Right(_) => ()
 
   val cmd = s"traceroute -m $count -q 1 -n $address"
   val result = executeCommand(cmd, "traceroute", address)

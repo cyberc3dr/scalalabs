@@ -47,6 +47,12 @@ case class HistoryNotFound(id: Int) extends ExecutionError:
 case class UtilityUnavailable(utility: String) extends ExecutionError:
   def message: String = s"Утилита '$utility' недоступна"
 
+case class UnknownUtility(utility: String) extends ExecutionError:
+  def message: String = s"Утилита '$utility' не входила в проверку окружения"
+
+case class PlatformNotSupported(os: String) extends ExecutionError:
+  def message: String = s"Ошибка: Это приложение работает только на macOS (обнаружена система: $os)"
+
 case class HostNotFound(host: String) extends ExecutionError:
   def message: String = s"Хост '$host' не существует"
 

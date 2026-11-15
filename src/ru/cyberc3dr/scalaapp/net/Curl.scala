@@ -20,7 +20,9 @@ case class CurlResult(
 }
 
 def curl(address: String): Either[AppError, CurlResult] =
-  if !EnvironmentChecker.isAvailable("curl") then return Left(UtilityUnavailable("curl"))
+  EnvironmentChecker.requireAvailable("curl") match
+    case Left(error) => return Left(error)
+    case Right(_) => ()
 
   val result = executeCommand(s"curl -sL -o /dev/null -w \"%{json}\" $address", "curl", address)
 

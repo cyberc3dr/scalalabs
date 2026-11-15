@@ -14,7 +14,9 @@ case class PingStats(
 )
 
 def ping(address: String, count: Int): Either[AppError, PingStats] =
-  if !EnvironmentChecker.isAvailable("ping") then return Left(UtilityUnavailable("ping"))
+  EnvironmentChecker.requireAvailable("ping") match
+    case Left(error) => return Left(error)
+    case Right(_) => ()
 
   val cmd = s"ping -c $count $address"
   val result = executeCommand(cmd, "ping", address)
