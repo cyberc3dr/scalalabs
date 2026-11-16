@@ -1,7 +1,8 @@
 package ru.cyberc3dr.scalaapp
 
 import ru.cyberc3dr.scalaapp.command.{CommandRegistry, ReportBuffer}
-import ru.cyberc3dr.scalaapp.errors.{AppError, ConfigInvalid}
+import ru.cyberc3dr.scalaapp.errors.{ConfigError, ConfigInvalid}
+import ru.cyberc3dr.scalaapp.errors.format
 import ru.cyberc3dr.scalaapp.model.{AppConfig, ConfigValidator, JsonParser}
 import ru.cyberc3dr.scalaapp.ui.{CLI, MenuLoop, PredefinedUI, UI}
 import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, EnvironmentReport, HistoryManager, Logging}
@@ -40,7 +41,7 @@ object App:
     
     EnvironmentChecker.check(ui) match
       case Left(error) =>
-        ui.writeError(error.message)
+        ui.writeError(error.format)
         return
       case Right(report) =>
         EnvironmentChecker.printReport(report, ui)
@@ -51,7 +52,7 @@ object App:
     MenuLoop(ui, reportBuffer).run()
 
   /** Загружает и проверяет конфигурацию */
-  def reloadConfiguration(): Either[AppError, AppConfig] =
+  def reloadConfiguration(): Either[ConfigError, AppConfig] =
     Logging.info("Перезагрузка конфигурации...")
     loadConfiguration("config.json") match
       case Right(value) =>
@@ -60,14 +61,14 @@ object App:
         Right(value)
       case Left(error) =>
         config = None
-        Logging.error(error.message)
+        Logging.error(error.format)
         error match
           case ConfigInvalid(_, problems) => problems.foreach(p => Logging.error(s"  - $p"))
           case _ => ()
         Logging.warn("Конфигурация не загружена, история тоже не будет загружена")
         Left(error)
 
-  private def loadConfiguration(path: String): Either[AppError, AppConfig] =
+  private def loadConfiguration(path: String): Either[ConfigError, AppConfig] =
     JsonParser.fromFile[AppConfig](path) match
       // Jackson не даст подгрузить файл с неправильной структурой или отсутствующий файл,
       // остальное проверим в ConfigValidator

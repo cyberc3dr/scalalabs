@@ -1,15 +1,15 @@
 package ru.cyberc3dr.scalaapp.command
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, ConfigNotLoaded, Internal}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, ParsingError, ConfigNotLoaded, Internal}
 import ru.cyberc3dr.scalaapp.App
 import ru.cyberc3dr.scalaapp.model.Profile
 
 object ProfilesParser extends CommandParser:
-  def parse(args: StrBuffer): Either[AppError, Command] = Right(ProfilesCommand)
+  def parse(args: StrBuffer): Either[ParsingError, Command] = Right(ProfilesCommand)
 
 object ProfilesExecutor extends CommandExecutor:
 
-  def execute(command: Command, ctx: CommandContext): Either[AppError, CommandSignal] = command match
+  def execute(command: Command, ctx: CommandContext): Either[ExecutionError, CommandSignal] = command match
     case ProfilesCommand =>
       App.config match
         case None => Left(ConfigNotLoaded)

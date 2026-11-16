@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp.command
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, HistoryNotFound, Internal}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, ParsingError, HistoryNotFound, Internal}
 import ru.cyberc3dr.scalaapp.model.HistoryEntry
 import ru.cyberc3dr.scalaapp.net.{CurlResult, DnsStats, PingStats, TraceStats}
 import ru.cyberc3dr.scalaapp.utils.HistoryManager
@@ -18,7 +18,7 @@ object CompareParser extends CommandParser:
   }
    */
   // все для людей
-  def parse(args: StrBuffer): Either[AppError, Command] =
+  def parse(args: StrBuffer): Either[ParsingError, Command] =
     for
       firstId  <- args.getInt
       secondId <- args.getInt
@@ -76,7 +76,7 @@ object CompareExecutor extends CommandExecutor:
     sb.append(s"\nВывод: $summary")
     sb.toString
 
-  def execute(command: Command, ctx: CommandContext): Either[AppError, CommandSignal] = command match
+  def execute(command: Command, ctx: CommandContext): Either[ExecutionError, CommandSignal] = command match
     case CompareCommand(firstId, secondId) =>
       for
         a <- HistoryManager.getById(firstId).toRight(HistoryNotFound(firstId))

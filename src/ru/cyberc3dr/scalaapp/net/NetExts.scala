@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp.net
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, GatewayNotFound}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, GatewayNotFound}
 import ru.cyberc3dr.scalaapp.utils.Logging
 
 import scala.collection.mutable.ListBuffer
@@ -25,7 +25,7 @@ def executeCommand(cmd: String, utility: String, target: String): CommandResult 
 
   CommandResult(buf.toList, proc)
 
-def getGateway: Either[AppError, String] =
+def getGateway: Either[ExecutionError, String] =
   val result = executeCommand("route -n get default", "route", "default gateway")
   result.output
     .find(_.contains("gateway"))

@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp.command
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, InvalidArgument, MissingArgument}
+import ru.cyberc3dr.scalaapp.errors.{InvalidArgument, MissingArgument, ParsingError}
 
 /** Курсор по словам введённой строки. */
 class StrBuffer(private val array: Array[String]):
@@ -9,7 +9,7 @@ class StrBuffer(private val array: Array[String]):
 
   def hasNext: Boolean = index < array.length
 
-  def getInt: Either[AppError, Int] =
+  def getInt: Either[ParsingError, Int] =
     if !hasNext then Left(MissingArgument("целое число"))
     else
       val str = array(index)
@@ -17,10 +17,10 @@ class StrBuffer(private val array: Array[String]):
       str.toIntOption.toRight(InvalidArgument(str, "целое число"))
 
   /** Читает целое число, либо возвращает значение по умолчанию, если аргументов больше нет. */
-  def getIntOrElse(default: Int): Either[AppError, Int] =
+  def getIntOrElse(default: Int): Either[ParsingError, Int] =
     if hasNext then getInt else Right(default)
 
-  def getDouble: Either[AppError, Double] =
+  def getDouble: Either[ParsingError, Double] =
     if !hasNext then Left(MissingArgument("число"))
     else
       val str = array(index)
@@ -28,7 +28,7 @@ class StrBuffer(private val array: Array[String]):
       str.toDoubleOption.toRight(InvalidArgument(str, "число"))
 
   /** Считывает count слов, склеивая их пробелами. */
-  def getString(count: Int): Either[AppError, String] =
+  def getString(count: Int): Either[ParsingError, String] =
     if count < 1 then Left(InvalidArgument(count.toString, "положительное количество слов"))
     else if !hasNext then Left(MissingArgument("строка"))
     else

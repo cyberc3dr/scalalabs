@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp.net
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, OutputParseFailed, UtilityUnavailable}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, OutputParseFailed}
 import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, Logging}
 
 import scala.collection.mutable.ListBuffer
@@ -12,7 +12,7 @@ case class DnsStats(
   time: Int
 )
 
-def dig(address: String): Either[AppError, DnsStats] =
+def dig(address: String): Either[ExecutionError, DnsStats] =
   EnvironmentChecker.requireAvailable("dig") match
     case Left(error) => return Left(error)
     case Right(_) => ()

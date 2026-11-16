@@ -1,14 +1,14 @@
 package ru.cyberc3dr.scalaapp.command
 
-import ru.cyberc3dr.scalaapp.errors.AppError
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, ParsingError}
 
 /** Разбор аргументов ввода в команду. */
 trait CommandParser:
-  def parse(args: StrBuffer): Either[AppError, Command]
+  def parse(args: StrBuffer): Either[ParsingError, Command]
 
 /** Исполнение разобранной команды. */
 trait CommandExecutor:
-  def execute(command: Command, ctx: CommandContext): Either[AppError, CommandSignal]
+  def execute(command: Command, ctx: CommandContext): Either[ExecutionError, CommandSignal]
 
 /** Результат выполнения команды. */
 sealed trait CommandSignal

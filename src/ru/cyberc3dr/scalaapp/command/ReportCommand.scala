@@ -1,7 +1,7 @@
 package ru.cyberc3dr.scalaapp.command
 
 import ru.cyberc3dr.scalaapp.App
-import ru.cyberc3dr.scalaapp.errors.{AppError, ConfigNotLoaded, Internal, IoFailure, ReportEmpty}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, ParsingError, ConfigNotLoaded, Internal, IoFailure, ReportEmpty}
 import ru.cyberc3dr.scalaapp.utils.Logging
 
 import java.io.{File, FileWriter, PrintWriter}
@@ -10,12 +10,12 @@ import java.time.format.DateTimeFormatter
 import scala.util.Try
 
 object ReportParser extends CommandParser:
-  def parse(args: StrBuffer): Either[AppError, Command] =
+  def parse(args: StrBuffer): Either[ParsingError, Command] =
     Right(ReportCommand(if args.hasNext then Some(args.getRemaining) else None))
 
 object ReportExecutor extends CommandExecutor:
 
-  def execute(command: Command, ctx: CommandContext): Either[AppError, CommandSignal] = command match
+  def execute(command: Command, ctx: CommandContext): Either[ExecutionError, CommandSignal] = command match
     case ReportCommand(fileName) =>
       App.config match
         case None => Left(ConfigNotLoaded)

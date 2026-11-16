@@ -3,7 +3,8 @@ package ru.cyberc3dr.scalaapp.ui
 import ru.cyberc3dr.scalaapp.command.*
 import ru.cyberc3dr.scalaapp.ui.UI
 import ru.cyberc3dr.scalaapp.utils.Logging
-import ru.cyberc3dr.scalaapp.errors.{Internal, UnknownCommand}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, Internal, InvalidArgument, MissingArgument, ParsingError, UnknownCommand}
+import ru.cyberc3dr.scalaapp.errors.format
 
 import scala.util.{Failure, Success, Try}
 
@@ -12,7 +13,7 @@ final class MenuLoop(ui: UI, reportBuffer: ReportBuffer):
   def run(): Unit =
     Logging.info("Command line interface started.")
     var running = true
-    
+
     while running do
       ui.readLine() match
         case None => running = false
@@ -26,14 +27,20 @@ final class MenuLoop(ui: UI, reportBuffer: ReportBuffer):
     val args = StrBuffer(tokens.tail)
 
     CommandRegistry.findByName(name) match
-      case None =>
-        ui.writeError(UnknownCommand(name).message)
+      case Left(UnknownCommand(name)) =>
+        ui.writeError(s"Неизвестная команда: $name. Введите help для списка команд.")
         true
 
-      case Some(spec) =>
+      case Right(spec) =>
         spec.parser.parse(args) match
-          case Left(error) =>
-            ui.writeError(s"${error.message}\nИспользование: ${spec.usage}")
+          case Left(MissingArgument(argument)) =>
+            ui.writeError(s"Пропущен аргумент: $argument")
+            ui.writeLine(s"Использование: ${spec.usage}")
+            true
+
+          case Left(InvalidArgument(value, expected)) =>
+            ui.writeError(s"Некорректный аргумент '$value' — ожидалось $expected")
+            ui.writeLine(s"Использование: ${spec.usage}")
             true
 
           case Right(command) =>
@@ -42,10 +49,10 @@ final class MenuLoop(ui: UI, reportBuffer: ReportBuffer):
                 val error = Internal(
                   s"команда '$name': ${e.getClass.getSimpleName}: ${e.getMessage}"
                 )
-                ui.writeError(error.message)
+                ui.writeError(error.format)
                 true
               case Success(Left(error)) =>
-                ui.writeError(error.message)
+                ui.writeError(error.format)
                 true
               case Success(Right(ExitSignal)) =>
                 ui.writeLine("Выключение...")

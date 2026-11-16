@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp.net
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, HostNotFound, UtilityUnavailable}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, HostNotFound}
 import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, Logging}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -19,7 +19,7 @@ case class Hop(
   latency: Double
 )
 
-def traceroute(address: String, count: Int): Either[AppError, TraceStats] =
+def traceroute(address: String, count: Int): Either[ExecutionError, TraceStats] =
   EnvironmentChecker.requireAvailable("traceroute") match
     case Left(error) => return Left(error)
     case Right(_) => ()

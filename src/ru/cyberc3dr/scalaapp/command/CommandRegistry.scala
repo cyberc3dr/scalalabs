@@ -1,5 +1,7 @@
 package ru.cyberc3dr.scalaapp.command
 
+import ru.cyberc3dr.scalaapp.errors.UnknownCommand
+
 import scala.collection.mutable.ListBuffer
 
 // Новая версия регистра, теперь с объектами
@@ -108,7 +110,7 @@ object CommandRegistry:
 
   def getAll: Seq[CommandSpec] = commands.toSeq
   
-  def findByName(name: String): Option[CommandSpec] =
-    commands.find(_.matches(name))
+  def findByName(name: String): Either[UnknownCommand, CommandSpec] =
+    commands.find(_.matches(name)).toRight(UnknownCommand(name))
 
 end CommandRegistry

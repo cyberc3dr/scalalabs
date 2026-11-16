@@ -1,11 +1,11 @@
 package ru.cyberc3dr.scalaapp.command
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, Internal, MissingArgument}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, ParsingError, Internal, MissingArgument}
 import ru.cyberc3dr.scalaapp.net.ping
 import ru.cyberc3dr.scalaapp.utils.Logging
 
 object PingParser extends CommandParser:
-  def parse(args: StrBuffer): Either[AppError, Command] =
+  def parse(args: StrBuffer): Either[ParsingError, Command] =
     if !args.hasNext then return Left(MissingArgument("адрес"))
     for
       address <- args.getString(1)
@@ -13,7 +13,7 @@ object PingParser extends CommandParser:
     yield PingCommand(address, count)
 
 object PingExecutor extends CommandExecutor:
-  def execute(command: Command, ctx: CommandContext): Either[AppError, CommandSignal] = command match
+  def execute(command: Command, ctx: CommandContext): Either[ExecutionError, CommandSignal] = command match
     case PingCommand(address, count) =>
       ping(address, count).map { stats =>
         val formatted = Logging.format(stats)

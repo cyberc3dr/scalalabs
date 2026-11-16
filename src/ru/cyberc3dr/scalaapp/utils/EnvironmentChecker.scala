@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp.utils
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, PlatformNotSupported, UnknownUtility, UtilityUnavailable}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, PlatformNotSupported, UnknownUtility, UtilityUnavailable}
 import ru.cyberc3dr.scalaapp.ui.UI
 
 import scala.sys.process.{ProcessLogger, stringToProcess}
@@ -20,7 +20,7 @@ object EnvironmentChecker:
   private var report: Option[EnvironmentReport] = None
 
   /** Полная проверка */
-  def check(ui: UI): Either[AppError, EnvironmentReport] =
+  def check(ui: UI): Either[ExecutionError, EnvironmentReport] =
     val os = System.getProperty("os.name").toLowerCase
     if !os.contains("mac") then Left(PlatformNotSupported(os))
     else
@@ -53,7 +53,7 @@ object EnvironmentChecker:
     case "ifconfig" | "route" => "сетевых интерфейсов"
     case _ => cmd
 
-  def isAvailable(cmd: String): Either[AppError, Boolean] =
+  def isAvailable(cmd: String): Either[ExecutionError, Boolean] =
     report match
       case None => Left(UnknownUtility(cmd))
       case Some(value) =>
@@ -61,7 +61,7 @@ object EnvironmentChecker:
           case Some(check) => Right(check.available)
           case None => Left(UnknownUtility(cmd))
 
-  def requireAvailable(cmd: String): Either[AppError, Unit] =
+  def requireAvailable(cmd: String): Either[ExecutionError, Unit] =
     isAvailable(cmd).flatMap {
       case true => Right(())
       case false => Left(UtilityUnavailable(cmd))

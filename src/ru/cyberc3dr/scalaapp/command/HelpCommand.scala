@@ -1,22 +1,22 @@
 package ru.cyberc3dr.scalaapp.command
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, Internal}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, Internal, ParsingError, UnknownCommand}
 
 object HelpParser extends CommandParser:
-  def parse(args: StrBuffer): Either[AppError, Command] =
+  def parse(args: StrBuffer): Either[ParsingError, Command] =
     val query = if args.hasNext then Some(args.getString(1).getOrElse("")) else None
     Right(HelpCommand(query))
 
 object HelpExecutor extends CommandExecutor:
 
-  def execute(command: Command, ctx: CommandContext): Either[AppError, CommandSignal] = command match
+  def execute(command: Command, ctx: CommandContext): Either[ExecutionError, CommandSignal] = command match
     case HelpCommand(query) =>
       query match
         case None => Right(CommandResult(formatAll()))
         case Some(q) =>
           CommandRegistry.findByName(q) match
-            case Some(spec) => Right(CommandResult(formatSpec(spec)))
-            case None => Right(CommandResult(s"Команда '$q' не найдена.\n${formatAll()}"))
+            case Right(spec) => Right(CommandResult(formatSpec(spec)))
+            case Left(UnknownCommand(name)) => Right(CommandResult(s"Команда '$name' не найдена.\n${formatAll()}"))
     case _ => Left(Internal("HelpExecutor получил чужую команду"))
 
   private def formatAll(): String =

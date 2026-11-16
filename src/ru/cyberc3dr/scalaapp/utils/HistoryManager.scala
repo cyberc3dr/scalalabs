@@ -1,7 +1,8 @@
 package ru.cyberc3dr.scalaapp.utils
 
 import ru.cyberc3dr.scalaapp.App
-import ru.cyberc3dr.scalaapp.errors.{AppError, ConfigNotLoaded, IoFailure}
+import ru.cyberc3dr.scalaapp.errors.{ConfigNotLoaded, ExecutionError, IoFailure}
+import ru.cyberc3dr.scalaapp.errors.format
 import ru.cyberc3dr.scalaapp.model.{HistoryEntry, JsonParser}
 import ru.cyberc3dr.scalaapp.net.DiagnosticResult
 
@@ -12,7 +13,7 @@ object HistoryManager:
 
   private val cache = ListBuffer.empty[HistoryEntry]
 
-  private def filePath: Either[AppError, String] =
+  private def filePath: Either[ExecutionError, String] =
     App.config.toRight(ConfigNotLoaded).map(_.historyFile)
 
   def load(): Unit =
@@ -28,9 +29,9 @@ object HistoryManager:
             cache.addAll(entries)
             Logging.info(s"История загружена: записей=${entries.length}")
           case Left(error) =>
-            Logging.warn(s"Не удалось загрузить историю (файл поврежден или отсутствует): ${error.message}")
+            Logging.warn(s"Не удалось загрузить историю (файл поврежден или отсутствует): ${error.format}")
 
-  def save(result: DiagnosticResult, profileName: String): Either[AppError, Int] =
+  def save(result: DiagnosticResult, profileName: String): Either[ExecutionError, Int] =
     filePath match
       case Left(error) => Left(error)
       case Right(path) =>

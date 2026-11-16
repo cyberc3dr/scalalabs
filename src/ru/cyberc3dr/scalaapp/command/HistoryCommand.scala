@@ -1,20 +1,20 @@
 package ru.cyberc3dr.scalaapp.command
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, Internal}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, ParsingError, Internal}
 import ru.cyberc3dr.scalaapp.utils.HistoryManager
 
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 object HistoryParser extends CommandParser:
-  def parse(args: StrBuffer): Either[AppError, Command] = Right(HistoryCommand)
+  def parse(args: StrBuffer): Either[ParsingError, Command] = Right(HistoryCommand)
 
 object HistoryExecutor extends CommandExecutor:
 
   private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     .withZone(ZoneId.systemDefault())
 
-  def execute(command: Command, ctx: CommandContext): Either[AppError, CommandSignal] = command match
+  def execute(command: Command, ctx: CommandContext): Either[ExecutionError, CommandSignal] = command match
     case HistoryCommand =>
       val entries = HistoryManager.getAll
       val text =

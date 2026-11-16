@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp.net
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, HostNotFound, OutputParseFailed, UtilityUnavailable}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, HostNotFound, OutputParseFailed}
 import ru.cyberc3dr.scalaapp.utils.{EnvironmentChecker, Logging}
 
 case class PingStats(
@@ -13,7 +13,7 @@ case class PingStats(
   maxLatency: Double
 )
 
-def ping(address: String, count: Int): Either[AppError, PingStats] =
+def ping(address: String, count: Int): Either[ExecutionError, PingStats] =
   EnvironmentChecker.requireAvailable("ping") match
     case Left(error) => return Left(error)
     case Right(_) => ()

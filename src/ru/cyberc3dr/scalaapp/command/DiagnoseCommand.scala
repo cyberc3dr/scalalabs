@@ -1,18 +1,18 @@
 package ru.cyberc3dr.scalaapp.command
 
 import ru.cyberc3dr.scalaapp.App
-import ru.cyberc3dr.scalaapp.errors.{AppError, ConfigNotLoaded, Internal, MissingArgument, ProfileNotFound}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, ParsingError, ConfigNotLoaded, Internal, MissingArgument, ProfileNotFound}
 import ru.cyberc3dr.scalaapp.net.diag
 import ru.cyberc3dr.scalaapp.utils.{HistoryManager, Logging}
 
 object DiagnoseParser extends CommandParser:
-  def parse(args: StrBuffer): Either[AppError, Command] =
+  def parse(args: StrBuffer): Either[ParsingError, Command] =
     if !args.hasNext then Left(MissingArgument("профиль"))
     else args.getString(1).map(DiagnoseCommand(_))
 
 object DiagnoseExecutor extends CommandExecutor:
 
-  def execute(command: Command, ctx: CommandContext): Either[AppError, CommandSignal] = command match
+  def execute(command: Command, ctx: CommandContext): Either[ExecutionError, CommandSignal] = command match
     case DiagnoseCommand(profileName) =>
       App.config match
         case None => Left(ConfigNotLoaded)

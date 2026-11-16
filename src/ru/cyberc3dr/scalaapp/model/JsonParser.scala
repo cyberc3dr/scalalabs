@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp.model
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, ConfigMalformed, OutputParseFailed}
+import ru.cyberc3dr.scalaapp.errors.{ConfigError, ConfigMalformed, ExecutionError, OutputParseFailed}
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.scala.DefaultScalaModule
 
@@ -35,11 +35,11 @@ object JsonParser:
   а, ну ладно
  */
 
-  inline def fromJson[T](json: String)(using ct: ClassTag[T]): Either[AppError, T] =
+  inline def fromJson[T](json: String)(using ct: ClassTag[T]): Either[ExecutionError, T] =
     Try(mapper.readValue(json, ct.runtimeClass).asInstanceOf[T])
       .toEither.left.map(_ => OutputParseFailed("json", json.take(120)))
 
-  inline def fromFile[T](filePath: String)(using ct: ClassTag[T]): Either[AppError, T] =
+  inline def fromFile[T](filePath: String)(using ct: ClassTag[T]): Either[ConfigError, T] =
     val file = File(filePath)
     if !file.exists() then Left(ConfigMalformed(filePath, "файл не найден"))
     else

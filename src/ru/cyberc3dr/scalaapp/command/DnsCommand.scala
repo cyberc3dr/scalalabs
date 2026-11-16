@@ -1,6 +1,6 @@
 package ru.cyberc3dr.scalaapp.command
 
-import ru.cyberc3dr.scalaapp.errors.{AppError, Internal, MissingArgument, OperationTimeout}
+import ru.cyberc3dr.scalaapp.errors.{ExecutionError, ParsingError, Internal, MissingArgument, OperationTimeout}
 import ru.cyberc3dr.scalaapp.net.dig
 import ru.cyberc3dr.scalaapp.utils.Logging
 
@@ -11,13 +11,13 @@ import scala.util.{Failure, Success, Try}
 import java.util.concurrent.TimeoutException
 
 object DnsParser extends CommandParser:
-  def parse(args: StrBuffer): Either[AppError, Command] =
+  def parse(args: StrBuffer): Either[ParsingError, Command] =
     if !args.hasNext then Left(MissingArgument("адрес"))
     else Right(DnsCommand(args.getRemaining))
 
 object DnsExecutor extends CommandExecutor:
 
-  def execute(command: Command, ctx: CommandContext): Either[AppError, CommandSignal] = command match
+  def execute(command: Command, ctx: CommandContext): Either[ExecutionError, CommandSignal] = command match
     case DnsCommand(address) =>
       val future = Future { dig(address) }
 
